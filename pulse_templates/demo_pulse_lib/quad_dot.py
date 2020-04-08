@@ -37,6 +37,9 @@ def return_pulse_lib_quad_dot():
 
 	quad_hardware = hardware('test')
 	pulse.load_hardware(quad_hardware)
+
+	# just to make qcodes happy
+	quad_hardware.close()
 	
 	return pulse
 

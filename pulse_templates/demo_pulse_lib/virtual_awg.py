@@ -1,4 +1,4 @@
-from demo_pulse_lib.quad_dot import return_pulse_lib_quad_dot
+from pulse_templates.demo_pulse_lib.quad_dot import return_pulse_lib_quad_dot
 
 def get_demo_lib(sample):
 	if sample == 'quad' :

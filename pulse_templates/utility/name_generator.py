@@ -4,23 +4,66 @@ wrapper that collect information about the template and prints it.
 Long term goal : add to the segment/sequence and save when the scan start
 '''
 
-from functools import wraps
-import inspect, itertools 
-from pulse_lib
+from pulse_lib.segments.utility.looping import loop_obj
+from si_prefix import si_format
+import numbers
 
-def template_wrapper(f):
+def format_name(function, arg_names, args):
+    '''
+    Formatting of a name for the template function that includes its set variables.
 
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        args_name = inspect.getargspec(f)[0]
-        
+    Args:
+        function (lamda) : function that needs nice formatting
+        args_names (list<str>) : list with names of the arguments of the function
+        args (list<any>) : list with data to be send into the function
+    '''
+    param_description =  function.__name__ + ' [ '
 
-        f(*args, **kwargs)
+    for i in range(len(arg_names)):
+        if arg_names[i] == 'segment':
+            continue
+        param_description += arg_names[i] + ' : ' + format_name_item(function.__name__, arg_names[i], args[i])
+        if i+1 != len(arg_names):
+            param_description += ', '
+        else:
+            param_description += ']'
 
-    return wrapper
+    return param_description
 
-@template_wrapper
-def example(test, t2, g):
-    print(test)
+def format_name_item(func_name, arg_name, arg_value):
+    '''
+    format the name of a single argument of a function.
 
-example('test', 't2', 'g')
+    Args:
+        func_name (str) : name of the function
+        arg_name (str) : name of the argument
+        arg_value (any) : value of the argument provided to the function
+    '''
+    if arg_name == 'segment':
+        return ''
+
+    unit_type = 'V'
+    multiplier = 1e-3
+    if arg_name.startswith('t_'):
+        unit_type = 's'
+        multiplier = 1e-9
+
+    if isinstance(arg_value, numbers.Number):
+        return si_format(arg_value*multiplier, precision=1) + unit_type
+
+    if isinstance(arg_value, str):
+        return arg_value
+
+    if isinstance(arg_value, loop_obj):
+        axis = tuple(arg_value.axis)
+        if len(axis) == 1:
+            axis = axis[0]
+        return 'VAR ' + str(axis)
+
+    if isinstance(arg_value, tuple):
+        items = []
+        for i in arg_value:
+            items.append(format_name_item(func_name, arg_name, i))
+        return str(tuple(items))
+
+    raise ValueError('Invalid input provided for function {}. Valid input arguments are Numeric/loop_obj types or tuples of those.'.format(func_name))
