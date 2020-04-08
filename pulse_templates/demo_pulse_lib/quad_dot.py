@@ -4,6 +4,7 @@ from pulse_lib.virtual_channel_constructors import IQ_channel_constructor, virtu
 
 import numpy as np
 
+
 class hardware(hw.harware_parent):
 
     def __init__(self, name):
