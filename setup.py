@@ -3,7 +3,7 @@ from setuptools.extension import Extension
 
 
 
-packages = ['psb_pulses']
+packages = ['psb_pulses', 'demo_pulse_lib']
 
 setup(name="pulse_templates",
 	version="0.1",
