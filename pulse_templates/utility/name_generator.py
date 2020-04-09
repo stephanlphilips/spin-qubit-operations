@@ -22,12 +22,14 @@ def format_name(function, arg_names, args, kwargs):
     for i in range(len(arg_names)):
         if arg_names[i] == 'segment':
             continue
-
+            
         if i < len(args):
             param_description += arg_names[i] + ' : ' + format_name_item(function.__name__, arg_names[i], args[i])
         else:
-            param_description += arg_names[i] + ' : ' + format_name_item(function.__name__, arg_names[i], kwargs[arg_names[i]])
-        
+            try:
+                param_description += arg_names[i] + ' : ' + format_name_item(function.__name__, arg_names[i], kwargs[arg_names[i]])
+            except:
+                pass
         if i+1 != len(arg_names):
             param_description += ', '
         else:

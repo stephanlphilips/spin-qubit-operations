@@ -11,6 +11,7 @@ import inspect
 def template_wrapper(f):
     '''
     wrapper for a template, will extract the name of the template.
+    Also adds support for debug functionalty in the experiment.
 
     Args :
         f (lamda) : template to be wrapped.

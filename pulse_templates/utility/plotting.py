@@ -22,7 +22,7 @@ def plot_seg(seg, multi_dim=False):
 
 	# plot relevant channels
 	plt.figure()
-	print(channels_to_render)
+
 	for channel in channels_to_render:
 		getattr(seg, channel).plot_segment(index=np.unravel_index([0],seg_single.shape)[0])
 
