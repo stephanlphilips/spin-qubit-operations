@@ -8,7 +8,7 @@ from pulse_lib.segments.utility.looping import loop_obj
 from si_prefix import si_format
 import numbers
 
-def format_name(function, arg_names, args):
+def format_name(function, arg_names, args, kwargs):
     '''
     Formatting of a name for the template function that includes its set variables.
 
@@ -22,7 +22,12 @@ def format_name(function, arg_names, args):
     for i in range(len(arg_names)):
         if arg_names[i] == 'segment':
             continue
-        param_description += arg_names[i] + ' : ' + format_name_item(function.__name__, arg_names[i], args[i])
+
+        if i < len(args):
+            param_description += arg_names[i] + ' : ' + format_name_item(function.__name__, arg_names[i], args[i])
+        else:
+            param_description += arg_names[i] + ' : ' + format_name_item(function.__name__, arg_names[i], kwargs[arg_names[i]])
+        
         if i+1 != len(arg_names):
             param_description += ', '
         else:

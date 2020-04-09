@@ -87,3 +87,28 @@ def pulse_inter(segment, gates, t_ramp, p_0, p_1, p_2, p_3, **kwargs):
     getattr(segment, P1).add_ramp_ss(0, 100, p_2[0], p_3[0])
     getattr(segment, P2).add_ramp_ss(0, 100, p_2[1], p_3[1])
     segment.reset_time()
+
+if __name__ == '__main__':
+    from pulse_templates.utility.plotting import plot_seg
+    from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
+    
+    pulse = get_demo_lib('quad')
+    seg = pulse.mk_segment()
+
+    gates = ('P1', 'P2')
+    
+    p_0 = (-7, -4)
+    p_1 = (-5, -4)
+    pulse_intra(seg, gates, t_wait=1000, t_ramp=2000, p_0=p_0, p_1=p_1)
+    
+    p_0 = (-3, -4)
+    p_1 = (-0, -4)
+    pulse_intra(seg, gates, t_wait=1000, t_ramp=2000, p_0=p_0, p_1=p_1)
+    
+    p_0 = ( 0, -4)
+    p_1 = ( 1, -1)
+    p_2 = (-1,  1)
+    p_3 = (-5,  5)
+    pulse_inter(seg, gates, t_ramp=5000, p_0=p_0, p_1=p_1, p_2=p_2, p_3=p_3)
+    
+    plot_seg(seg)
