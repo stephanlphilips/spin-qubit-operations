@@ -6,7 +6,7 @@ from pulse_templates.utility.oper import add_block, add_ramp
 
 @template_wrapper
 def elzerman_basic(segment, gates, t_init, t_ramp, t_load, t_read,
-        p_0, p_1 , p_2, p_3, p_4, disable_trigger=False):
+        p_0, p_1 , p_2, p_3, p_4, disable_trigger=False, **kwargs):
     '''
     pulse able to perform a psb readout
 

@@ -68,7 +68,7 @@ if __name__ == '__main__':
     
     p_0 = (-7, -4)
     p_1 = (-5, -4)
-    pulse_intra(seg, gates, t_wait=1000, t_ramp=2000, p_0=p_0, p_1=p_1)
+    pulse_intra(seg, gates, t_wait=1000, t_ramp=2000, p_0=p_0, p_1=p_1, debug = True)
     
     p_0 = (-3, -4)
     p_1 = (-0, -4)
