@@ -7,6 +7,7 @@ Pulses:
 
 '''
 from pulse_templates.utility.template_wrapper import template_wrapper 
+from pulse_templates.utility.oper import add_block, add_ramp
 
 @template_wrapper
 def PSB_read(segment, gates, t_ramp, t_read, p_0, p_1, disable_trigger=False):
@@ -22,26 +23,17 @@ def PSB_read(segment, gates, t_ramp, t_read, p_0, p_1, disable_trigger=False):
         p_1 (tuple<double>) : point after the anticrossing, where the readout should happen.
         disable_trigger (bool) : disable triggerig for digitizer, only for debuggig.
     '''
-
-    P1, P2 = gates
-
     # jump close to (1,1) -- (2,0) wait 100 ns
-    getattr(segment, P1).add_block(0, 100, p_0[0])
-    getattr(segment, P2).add_block(0, 100, p_0[1])
-    segment.reset_time()
+    add_block(segment, 100, gates, p_0)
 
     # pulse towards the window and stay for the measurment time
-    getattr(segment, P1).add_ramp_ss(0, t_ramp, p_0[0], p_1[0])
-    getattr(segment, P2).add_ramp_ss(0, t_ramp, p_0[1], p_1[1])
-    segment.reset_time()
+    add_ramp(segment, t_ramp, gates, p_0, p_1)
 
     if disable_trigger == False:
-        getattr(segment, P1).add_HVI_marker("dig_wait")
-        getattr(segment, P1).add_HVI_variable("t_measure", t_read)
+        getattr(segment, gates[0]).add_HVI_marker("dig_wait")
+        getattr(segment, gates[0]).add_HVI_variable("t_measure", t_read)
 
-    getattr(segment, P1).add_block(0, t_read, p_1[0])
-    getattr(segment, P2).add_block(0, t_read, p_1[1])
-    segment.reset_time()
+    add_block(segment, t_read, gates, p_1)
 
 @template_wrapper
 def PSB_read_latched(segment, gates, t_ramp, t_read, p_0, p_1, p_2, disable_trigger=False):
@@ -58,30 +50,19 @@ def PSB_read_latched(segment, gates, t_ramp, t_read, p_0, p_1, p_2, disable_trig
         p_2 (tuple <double>) : effective point where the averaging should happen
         disable_trigger (bool) : disable triggerig for digitizer, only for debuggig.
     '''
-
-    P1, P2 = gates
-
     # jump close to (1,1) -- (2,0) wait 100 ns
-    getattr(segment, P1).add_block(0, 100, p_0[0])
-    getattr(segment, P2).add_block(0, 100, p_0[1])
-    segment.reset_time()
+    add_block(segment, 100, gates, p_0)
 
     # pulse towards the window and stay for the measurment time
-    getattr(segment, P1).add_ramp_ss(0, t_ramp, p_0[0], p_1[0])
-    getattr(segment, P2).add_ramp_ss(0, t_ramp, p_0[1], p_1[1])
-    segment.reset_time()
+    add_ramp(segment, t_ramp, gates, p_0, p_1)
+    add_ramp(segment, 10, gates, p_1, p_2)
 
-    getattr(segment, P1).add_ramp_ss(0, 10, p_1[0], p_2[0])
-    getattr(segment, P2).add_ramp_ss(0, 10, p_1[1], p_2[1])
-    segment.reset_time()
 
     if disable_trigger == False:
-        getattr(segment, P1).add_HVI_marker("dig_wait")
-        getattr(segment, P1).add_HVI_variable("t_measure", t_read)
+        getattr(segment, gates[0]).add_HVI_marker("dig_wait")
+        getattr(segment, gates[0]).add_HVI_variable("t_measure", t_read)
 
-    getattr(segment, P1).add_block(0, t_read, p_2[0])
-    getattr(segment, P2).add_block(0, t_read, p_2[1])
-    segment.reset_time()
+    add_block(segment, t_read, gates, p_2)
 
 if __name__ == '__main__':
     from pulse_templates.utility.plotting import plot_seg

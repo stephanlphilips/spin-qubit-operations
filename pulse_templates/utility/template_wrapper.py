@@ -48,7 +48,7 @@ if __name__ == '__main__':
     info = pulse_intra(seg, ('P1', 'P2'), 1000, 100, (0,0), (0.1,3), debug=True)
     print(info)
 
-    info = pulse_intra(seg, ('P1', 'P2'), 1000, 100, (0,linspace(0,1, axis=0)), (0.1,3))
+    info = pulse_intra(seg, ('P1', 'P2'), 1000, linspace(0,1, axis=0), (0,1), (0.1,3))
     print(info)
 
     info = pulse_intra(seg, ('P1', 'P2'), 1000, 100, (0,linspace(0,1, axis=1)), (0.1,3))

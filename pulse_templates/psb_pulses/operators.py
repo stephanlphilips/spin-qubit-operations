@@ -7,6 +7,7 @@ Pulses
 
 '''
 from pulse_templates.utility.template_wrapper import template_wrapper 
+from pulse_templates.utility.oper import add_block, add_ramp
 
 @template_wrapper
 def jump(segment, gates, t_ramp, p_0, p_1, **kwargs):
@@ -20,12 +21,8 @@ def jump(segment, gates, t_ramp, p_0, p_1, **kwargs):
         p_0 (tuple <double>) : point where to start
         p_1 (tuple <double>) : point where to end.
     '''
-    P1, P2 = gates
-
     # wait at this spot..
-    getattr(segment, P1).add_ramp_ss(0, t_ramp, p_0[0], p_1[0])
-    getattr(segment, P2).add_ramp_ss(0, t_ramp, p_0[1], p_1[1])
-    segment.reset_time()
+    add_ramp(segment, t_ramp, gates, p_0, p_1)
 
 
 @template_wrapper
@@ -39,12 +36,8 @@ def wait(segment, gates, t_wait, p_0, **kwargs):
         t_wait (double) : time to wait at p_0
         p_0 (tuple <double>) : point where to wait at
     '''
-    P1, P2 = gates
-
     # wait at this spot..
-    getattr(segment, P1).add_block(0, t_wait, p_0[0])
-    getattr(segment, P2).add_block(0, t_wait, p_0[1])
-    segment.reset_time()
+    add_block(segment, t_wait, gates, p_0)
 
 if __name__ == '__main__':
     from pulse_templates.utility.plotting import plot_seg
