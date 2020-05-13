@@ -1,4 +1,4 @@
-import V2_software.drivers.virtual_gates.instrument_drivers.harware as hw
+import core_tools.drivers.harware as hw
 from pulse_lib.base_pulse import pulselib
 from pulse_lib.virtual_channel_constructors import IQ_channel_constructor, virtual_gates_constructor
 

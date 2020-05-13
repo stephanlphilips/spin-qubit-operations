@@ -5,6 +5,7 @@ Long term goal : add to the segment/sequence and save when the scan start
 '''
 
 from pulse_lib.segments.utility.looping import loop_obj
+import dataclasses
 from si_prefix import si_format
 import numbers
 
@@ -46,13 +47,16 @@ def format_name_item(func_name, arg_name, arg_value):
         arg_name (str) : name of the argument
         arg_value (any) : value of the argument provided to the function
     '''
-    if arg_name == 'segment':
+    if arg_name == 'segment' or arg_value is None:
         return ''
 
     unit_type = 'V'
     multiplier = 1e-3
     if arg_name.startswith('t_'):
-        unit_type = 's'
+        unit_type = 'ns'
+        multiplier = 1
+    if arg_name.startswith('f_'):
+        unit_type = 'GHz'
         multiplier = 1e-9
 
     if isinstance(arg_value, numbers.Number):
@@ -66,6 +70,14 @@ def format_name_item(func_name, arg_name, arg_value):
         if len(axis) == 1:
             axis = axis[0]
         return 'VAR ' + str(axis)
+
+    if dataclasses.is_dataclass(arg_value):
+        items = '[ '
+        key_values_pairs = list(arg_value.__dict__.items())
+        for i in range(len(key_values_pairs)):
+            items += str(key_values_pairs[i][0]) + ' '
+            items += format_name_item(func_name, key_values_pairs[i][0], key_values_pairs[i][1]) + ' '
+        return items + ' ]'
 
     if isinstance(arg_value, tuple):
         items = []

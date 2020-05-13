@@ -1,5 +1,4 @@
 import matplotlib
-matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -14,8 +13,9 @@ def plot_seg(seg, multi_dim=False):
 	
 	# etstablish which channels are used
 	channels_to_render = list()
-	for channel in seg.channels:
+	for channel in seg.channels:		
 		seg_single = getattr(seg, channel)
+		print(seg_single.shape)
 		v_max = seg_single.v_max( np.unravel_index([0],seg_single.shape)[0])
 		v_min = seg_single.v_min( np.unravel_index([0],seg_single.shape)[0])
 
