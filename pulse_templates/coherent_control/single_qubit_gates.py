@@ -8,29 +8,55 @@ from collections import OrderedDict
 
 @dataclass
 class single_qubit_gate_spec:
+    '''
+    Args:
+        qubit_name : name of the virtual qubit channel
+        f_qubit : frequency at which you want to drive the qubit
+        t_pulse : time of the pulse
+        MW_power : voltage to apply on the I and Q channels
+        phase : phase of the current MW
+        permanent_phase_shift : permanent phase shift to introduce after the gate
+
+    '''
     qubit_name : str
     f_qubit : Union[float, loop_obj]
     t_pulse : Union[float, loop_obj]
     MW_power : Union[float, loop_obj]
     phase : Union[float, loop_obj] = 0 
+    permanent_phase_shift : Union[float, loop_obj] = 0
     AM_mod : any = None
     PM_mod : any = None
 
 
 # TODO generic one for multiple single qubit gates
 @template_wrapper
-def single_qubit_gate_simple(segment, gate_object, padding = 0,**kwargs):
+def single_qubit_gate_simple(segment, gate_object, padding = 1,**kwargs):
     '''
-    add a single qubit gate (elementary -- no shaping)
+    add a single qubit gate
 
     Args:
         segment (segment_container) : segment to which to add this stuff
         gate_object (single_qubit_gate_spec) : gate object describing the microwave pulse
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
-    getattr(segment, gate_object.qubit_name).add_MW_pulse(padding, gate_object.t_pulse + padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
+    _load_single_qubit_gate(getattr(segment, gate_object.qubit_name), gate_object, padding)
     segment.reset_time()
-    getattr(segment, gate_object.qubit_name).wait(padding)
+
+
+def _load_single_qubit_gate(segment, gate_object, padding = 1,**kwargs):
+    '''
+    add a single qubit gate on a segment (NOT SEGMENT_container)
+
+    Args:
+        segment (segment) : segment to which to add this stuff
+        gate_object (single_qubit_gate_spec) : gate object describing the microwave pulse
+        padding (double) : padding that needs to be put around the microwave (value added at each side).
+    '''
+    if gate_object.t_pulse > 0:
+        segment.add_MW_pulse(padding, gate_object.t_pulse + padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
+        segment.reset_time()
+        segment.wait(padding)
+    segment.add_global_phase(gate_object.permanent_phase_shift)
     segment.reset_time()
 
 
@@ -54,6 +80,6 @@ if __name__ == '__main__':
     # # T2* measurement
     single_qubit_gate_simple(seg, Q4_Pi2)
     wait(seg, gates, linspace(10,100), base_level)
-    # might be useful to add here extra phase if the qubit freq is not defined.
+    # # might be useful to add here extra phase if the qubit freq is not defined.
     single_qubit_gate_simple(seg, Q4_Pi2)
     plot_seg(seg)

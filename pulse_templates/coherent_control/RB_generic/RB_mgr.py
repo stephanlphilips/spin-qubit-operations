@@ -1,10 +1,12 @@
+import random
+import copy
+
 class RB_mgr:
     '''
-    Function that load rb sequences
+    Function that loads RB sequences
     '''
     def __init__(self, load_set, mode, seed=None):
         self.load_set = load_set
-        self.load_set.check_gate_availability(mode)
         
         self.mode = mode
         random.seed(seed)
@@ -15,20 +17,33 @@ class RB_mgr:
 
         Args:
             segment (segment)
-            N
+            N (int) : number of random cliffords to add
+            interleave (str) : gate to add to interleave (TODO)
         '''
-        
-        rand = random.randrange(0, self.load_set.size)
 
-    def __add__inverse(self, segment, matrix):
-        '''
-        add the inverse gate to the end the sequence
+        matrix = copy.deepcopy(self.load_set.qubit_set.PAULI_I.matrix)
 
-        Args:
-            segment (segment) :
-            matrix (np.ndarray) : unitary of the previous sequence
-        '''
-        pass
+        for i in range(N-1):
+            rand = random.randrange(0, self.load_set.size)
+            matrix *= self.load_set.load_clifford_gate(segment, rand, self.mode)
 
-rb_managment = RB_mgr(load_set_single_qubit(), 'XY')
-rb_managment.add_rand_clifford(5)
+        self.load_set.load_inverting_clifford(segment, matrix, self.mode)
+
+
+if __name__ == '__main__':
+    from pulse_templates.coherent_control.RB_single.randomised_benchmarking_definitions import load_set_single_qubit
+    from pulse_templates.coherent_control.single_qubit_gates import single_qubit_gate_spec
+    from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
+    from pulse_templates.utility.plotting import plot_seg
+
+    pulse = get_demo_lib('quad')
+    seg = pulse.mk_segment()
+
+    xpi2 = single_qubit_gate_spec('qubit4_MW', 1e9, 100, 120)
+    xpi = single_qubit_gate_spec('qubit4_MW', 1e9, 200, 120)
+    ss_set = load_set_single_qubit()
+    ss_set.X = xpi2
+    ss_set.X2 = xpi
+
+    rb_managment = RB_mgr(ss_set, 'XY')
+    rb_managment.add_cliffords(seg, 20)

@@ -20,5 +20,5 @@ def rot_mat(theta, unit_vector):
 								unit_vector[1]*pauli_Y +
 								unit_vector[2]*pauli_Z
 								)
-			).round(10)
+			)
 	return mat
