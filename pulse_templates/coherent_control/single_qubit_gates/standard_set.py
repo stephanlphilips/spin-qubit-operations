@@ -3,6 +3,7 @@ from pulse_templates.coherent_control.single_qubit_gates.single_qubit_gates impo
 from pulse_lib.segments.segment_container import segment_container
 
 import copy
+
 class gate_descriptor:
     def __init__(self, ref_gate = None, amp = None, add_phase = 0, add_glob_phase = 0):
         self.gate_name = None

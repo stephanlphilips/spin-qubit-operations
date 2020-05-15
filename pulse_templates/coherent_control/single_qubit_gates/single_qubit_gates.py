@@ -16,7 +16,6 @@ class single_qubit_gate_spec:
         MW_power : voltage to apply on the I and Q channels
         phase : phase of the current MW
         permanent_phase_shift : permanent phase shift to introduce after the gate
-
     '''
     qubit_name : str
     f_qubit : Union[float, loop_obj]
@@ -24,6 +23,7 @@ class single_qubit_gate_spec:
     MW_power : Union[float, loop_obj]
     phase : Union[float, loop_obj] = 0 
     permanent_phase_shift : Union[float, loop_obj] = 0
+    padding : Union[float, int] = 1 #left right padding around the MW pulse in ns
     AM_mod : any = None
     PM_mod : any = None
 
@@ -39,7 +39,7 @@ class single_qubit_gate_spec:
 
 # TODO generic one for multiple single qubit gates
 @template_wrapper
-def single_qubit_gate_simple(segment, gate_object, padding = 1,**kwargs):
+def single_qubit_gate_simple(segment, gate_object,**kwargs):
     '''
     add a single qubit gate
 
@@ -48,11 +48,11 @@ def single_qubit_gate_simple(segment, gate_object, padding = 1,**kwargs):
         gate_object (single_qubit_gate_spec) : gate object describing the microwave pulse
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
-    _load_single_qubit_gate(getattr(segment, gate_object.qubit_name), gate_object, padding)
+    _load_single_qubit_gate(getattr(segment, gate_object.qubit_name), gate_object)
     segment.reset_time()
 
 
-def _load_single_qubit_gate(segment, gate_object, padding = 1,**kwargs):
+def _load_single_qubit_gate(segment, gate_object,**kwargs):
     '''
     add a single qubit gate on a segment (NOT SEGMENT_container)
 
@@ -62,9 +62,9 @@ def _load_single_qubit_gate(segment, gate_object, padding = 1,**kwargs):
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
     if gate_object.t_pulse > 0 and gate_object.MW_power!=0:
-        segment.add_MW_pulse(padding, gate_object.t_pulse + padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
+        segment.add_MW_pulse(gate_object.padding, gate_object.t_pulse + gate_object.padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
         segment.reset_time()
-        segment.wait(padding)
+        segment.wait(gate_object.padding)
     segment.add_global_phase(gate_object.permanent_phase_shift)
     segment.reset_time()
 
@@ -89,6 +89,6 @@ if __name__ == '__main__':
     # # T2* measurement
     single_qubit_gate_simple(seg, Q4_Pi2)
     wait(seg, gates, linspace(10,100), base_level)
-    # # might be useful to add here extra phase if the qubit freq is not defined.
+    # shorthand syntax
     Q4_Pi2.add(seg)
     plot_seg(seg)

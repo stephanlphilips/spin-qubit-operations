@@ -1,29 +1,24 @@
-import numpy as np
-from scipy.linalg import sqrtm
+import pulse_lib.segments.utility.looping as lp
 
-pauli_I = np.matrix([[1,0],[0,1]], dtype=complex)
-pauli_X = np.matrix([[0,1],[1,0]], dtype=complex)
-pauli_Y = np.matrix([[0,-1j],[1j,0]], dtype=complex)
-pauli_Z = np.matrix([[1,0],[0,-1]], dtype=complex)
+from pulse_templates.coherent_control.single_qubit_gates.standard_set import single_qubit_std_set
+from pulse_templates.coherent_control.single_qubit_gates.single_qubit_gates import single_qubit_gate_spec
+from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
+from pulse_templates.utility.plotting import plot_seg
 
-def rot_mat(theta, unit_vector):
-	'''
-	Generate a rotation unitary for an angle theta.
+pulse = get_demo_lib('quad')
+seg = pulse.mk_segment()
 
-	Args:
-		theta (double) : angle to rotate
-		unit_vector (list) : list with the vector of rotation (XYZ)
-	'''
-	mat = (np.cos(theta/2)*pauli_I - 
-			1j*np.sin(theta/2)*(unit_vector[0]*pauli_X +
-								unit_vector[1]*pauli_Y +
-								unit_vector[2]*pauli_Z
-								)
-			).round(10)
-	return mat
+xpi2 = single_qubit_gate_spec('qubit1_MW', 1.1e8, 100, 120, padding=2)
+xpi = single_qubit_gate_spec('qubit1_MW', 1.1e8, 200, 120, padding=2)
+ss_set = single_qubit_std_set()
+ss_set.X = xpi2
+ss_set.X2 = xpi
+pulse.IQ_channels[0].virtual_channel_map[0].reference_frequency = 1.1e8
 
-if __name__ == '__main__':
-	print(rot_mat(0, [1,0,0]))
-	print(rot_mat(np.pi, [1,0,0]))
-	print(rot_mat(np.pi, [0,1,0]))
-	print(rot_mat(np.pi, [0,0,1]))
+
+ss_set.X.add(seg)
+ss_set.X.add(seg)
+ss_set.Y.add(seg)
+ss_set.Z.add(seg)
+ss_set.X2.add(seg)
+plot_seg(seg)
