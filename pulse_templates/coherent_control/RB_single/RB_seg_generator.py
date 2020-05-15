@@ -1,4 +1,4 @@
-from pulse_templates.coherent_control.RB_single.randomised_benchmarking_definitions import single_qubit_gates_clifford_set, pauli_I
+from pulse_templates.coherent_control.RB_single.RB_definitions import single_qubit_gates_clifford_set, pauli_I
 from pulse_templates.coherent_control.RB_generic.RB_mgr import RB_mgr
 from pulse_lib.segments.utility.looping import linspace
 
@@ -19,7 +19,7 @@ def generature_single_qubit_RB(segment, gate_set, n_gates, n_rand, RB_type='XZ',
     n_gates.axis= [0]
     n_gates.name='N Cliffords'
     n_gates.unit='#'
-    rand = linspace(1, n_rand, n_rand, axis = [1], name='Nth rep', unit='#' )
+    rand = linspace(1, n_rand, n_rand, axis = 1, name='Nth rep', unit='#' )
     
     getattr(segment, gate_set.qubit).update_dim(rand)
     getattr(segment, gate_set.qubit).update_dim(n_gates)
@@ -31,8 +31,8 @@ def generature_single_qubit_RB(segment, gate_set, n_gates, n_rand, RB_type='XZ',
             RB_mgmt.add_cliffords(getattr(segment, gate_set.qubit)[n,m], int(n_gates.data[m]))
 
 if __name__ == '__main__':
-    from pulse_templates.coherent_control.RB_single.randomised_benchmarking_definitions import load_set_single_qubit
-    from pulse_templates.coherent_control.single_qubit_gates import single_qubit_gate_spec
+    from pulse_templates.coherent_control.single_qubit_gates.standard_set import single_qubit_std_set
+    from pulse_templates.coherent_control.single_qubit_gates.single_qubit_gates import single_qubit_gate_spec
     from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
     from pulse_templates.utility.plotting import plot_seg
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     seg = pulse.mk_segment()
     xpi2 = single_qubit_gate_spec('qubit4_MW', 1e9, 100, 120)
     xpi = single_qubit_gate_spec('qubit4_MW', 1e9, 200, 120)
-    ss_set = load_set_single_qubit()
+    ss_set = single_qubit_std_set()
     ss_set.X = xpi2
     ss_set.X2 = xpi
 

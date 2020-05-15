@@ -2,7 +2,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot_seg(seg, multi_dim=False):
+def plot_seg(seg, idx=0, multi_dim=False):
 	'''
 	plot all the segments that are operated in a segment, if looped, also plot some parts of the loop.
 
@@ -15,9 +15,9 @@ def plot_seg(seg, multi_dim=False):
 	channels_to_render = list()
 	for channel in seg.channels:		
 		seg_single = getattr(seg, channel)
-		print(seg_single.shape)
-		v_max = seg_single.v_max( np.unravel_index([0],seg_single.shape)[0])
-		v_min = seg_single.v_min( np.unravel_index([0],seg_single.shape)[0])
+
+		v_max = seg_single.v_max( np.unravel_index([0],seg_single.shape)[idx])
+		v_min = seg_single.v_min( np.unravel_index([0],seg_single.shape)[idx])
 
 		if v_max != 0 or v_min != 0:
 			channels_to_render.append(channel)
@@ -26,7 +26,7 @@ def plot_seg(seg, multi_dim=False):
 	plt.figure()
 
 	for channel in channels_to_render:
-		getattr(seg, channel).plot_segment(index=np.unravel_index([0],seg_single.shape)[0])
+		getattr(seg, channel).plot_segment(index=np.unravel_index([0],seg_single.shape)[idx])
 
 	plt.show()
 if __name__ == '__main__':

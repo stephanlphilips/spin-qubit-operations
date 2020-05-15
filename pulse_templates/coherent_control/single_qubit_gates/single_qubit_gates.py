@@ -27,6 +27,15 @@ class single_qubit_gate_spec:
     AM_mod : any = None
     PM_mod : any = None
 
+    def add(self, segment):
+        '''
+        adds itselves to a segment
+
+        Args:
+            segment (segment_container) : segement where to add the gate to.
+        '''
+        single_qubit_gate_simple(segment, self)
+
 
 # TODO generic one for multiple single qubit gates
 @template_wrapper
@@ -52,7 +61,7 @@ def _load_single_qubit_gate(segment, gate_object, padding = 1,**kwargs):
         gate_object (single_qubit_gate_spec) : gate object describing the microwave pulse
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
-    if gate_object.t_pulse > 0:
+    if gate_object.t_pulse > 0 and gate_object.MW_power!=0:
         segment.add_MW_pulse(padding, gate_object.t_pulse + padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
         segment.reset_time()
         segment.wait(padding)
@@ -81,5 +90,5 @@ if __name__ == '__main__':
     single_qubit_gate_simple(seg, Q4_Pi2)
     wait(seg, gates, linspace(10,100), base_level)
     # # might be useful to add here extra phase if the qubit freq is not defined.
-    single_qubit_gate_simple(seg, Q4_Pi2)
+    Q4_Pi2.add(seg)
     plot_seg(seg)
