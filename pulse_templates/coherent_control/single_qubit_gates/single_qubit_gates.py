@@ -4,7 +4,7 @@ from pulse_templates.utility.oper import add_block, add_ramp
 from pulse_lib.segments.utility.looping import loop_obj
 from dataclasses import dataclass
 from typing import Union
-from collections import OrderedDict
+import copy
 
 @dataclass
 class single_qubit_gate_spec:
@@ -36,6 +36,24 @@ class single_qubit_gate_spec:
         '''
         single_qubit_gate_simple(segment, self)
 
+    def __call__(self, angle):
+        '''
+        fuction that allows for easy mod of the object:
+
+        if the time/amp are zero, a z phase will be added
+        else, to the current gate, the phase will be counted up
+
+        Args:
+            angle (double) : angle to rotate
+        '''
+        cpy = copy.deepcopy(self)
+
+        if cpy.MW_power == 0 or cpy.t_pulse ==0:
+            cpy.permanent_phase_shift = angle
+        else:
+            cpy.phase += angle
+
+        return cpy
 
 # TODO generic one for multiple single qubit gates
 @template_wrapper

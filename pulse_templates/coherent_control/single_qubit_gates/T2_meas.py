@@ -1,4 +1,3 @@
-from core_tools.sweeps.pulse_lib_sweep import spin_qubit_exp, dummy_multi_parameter
 from pulse_templates.coherent_control.single_qubit_gates.single_qubit_gates import single_qubit_gate_spec
 from pulse_templates.oper.operators import jump, wait
 from pulse_templates.utility.plotting import plot_seg
@@ -15,9 +14,8 @@ def T2_ramsey(seg, gate_set, t_wait, f_bg_oscillations):
         f_bg_oscillations (double) : freq at which the the qubit needs to oscilate 
     '''
     gate_set.X.add(seg)
-    getattr(seg, gate_set.qubit).wait(t_wait) 
-    getattr(seg, gate_set.qubit).add_global_phase(t_wait*1e-9*f_bg_oscillations*np.pi*2)
-    getattr(seg, gate_set.qubit).reset_time()
+    gate_set.wait(seg, t_wait)
+    gate_set.Z(t_wait*1e-9*f_bg_oscillations*np.pi*2).add(seg)
     gate_set.X.add(seg)
 
 def T2_CPMG_t_tot(seg, gate_set, t_wait, N_rep,f_bg_oscillations):
@@ -37,15 +35,11 @@ def T2_CPMG_t_tot(seg, gate_set, t_wait, N_rep,f_bg_oscillations):
     gate_set.X.add(seg)
 
     for i in range(N_rep):
-        getattr(seg, gate_set.qubit).wait(t_wait/N_rep/2) 
-        getattr(seg, gate_set.qubit).reset_time()
-
+        gate_set.wait(seg, t_wait/N_rep/2)
         gate_set.X2.add(seg)
+        gate_set.wait(seg, t_wait/N_rep/2)
 
-        getattr(seg, gate_set.qubit).wait(t_wait/N_rep/2) 
-        getattr(seg, gate_set.qubit).reset_time()
-
-    getattr(seg, gate_set.qubit).add_global_phase(t_wait*1e-9*f_bg_oscillations*np.pi*2)
+    gate_set.Z(t_wait*1e-9*f_bg_oscillations*np.pi*2).add(seg)
     gate_set.X.add(seg)
 
 def T2_CPMG_t_single(seg, gate_set, t_wait, N_rep, f_bg_oscillations):
