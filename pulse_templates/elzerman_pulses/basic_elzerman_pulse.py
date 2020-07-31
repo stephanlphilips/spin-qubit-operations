@@ -51,10 +51,32 @@ def elzerman_read(segment, gates, t_read, p_readout, disable_trigger=False, **kw
         disable_trigger (bool) : disable triggerig for digitizer, only for debuggig.
     '''
     if disable_trigger == False:
-        getattr(segment, gates[0]).add_HVI_marker("dig_wait")
+        getattr(segment, gates[0]).add_HVI_marker("dig_wait_1")
         getattr(segment, gates[0]).add_HVI_variable("t_measure", t_read)
 
+    # gates=gates+('M2',)
+    # p_readout=p_readout+(0,)
+    
     add_block(segment, t_read, gates, p_readout)
+
+@template_wrapper
+def elzerman_read_multi(segment, gates, t_read, p_readout, nth_readout=0, disable_trigger=False, **kwargs):
+    '''
+    pulse able to perform a psb readout
+
+    Args:
+        segment (segment_container) : segment to which to add this stuff
+        gates (tuple<str>) : plunger gate names
+        t_read (double) : readout time
+        p_readout (tuple <double>) : point where to readout
+        disable_trigger (bool) : disable triggerig for digitizer, only for debuggig.
+    '''
+    if disable_trigger == False:
+        getattr(segment, gates[0]).add_HVI_marker("dig_wait_{}".format(int(nth_readout)))
+        getattr(segment, gates[0]).add_HVI_variable("t_measure", t_read)
+    
+    add_block(segment, t_read, gates, p_readout)
+
 
 if __name__ == '__main__':
     from pulse_templates.utility.plotting import plot_seg

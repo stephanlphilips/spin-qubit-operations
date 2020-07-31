@@ -25,7 +25,7 @@ def template_wrapper(f):
                 # arg[0] is always the segment, [1] gates
                 segment = args[0]
                 gates = args[1] #cleaner directly add in the HVI variable, but was a bit layzy
-                getattr(segment, gates[0]).add_HVI_marker("dig_wait")
+                getattr(segment, gates[0]).add_HVI_marker("dig_wait_1")
                 getattr(segment, gates[0]).add_HVI_variable("t_measure", 100)
                 # usually this is not done via HVI averaging, so time is just set to a dummy variable atm (thight might change in a later stage)
         function_info = format_name(f,args_name, args, kwargs)
