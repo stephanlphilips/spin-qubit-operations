@@ -79,7 +79,7 @@ def _load_single_qubit_gate(segment, gate_object,**kwargs):
         gate_object (single_qubit_gate_spec) : gate object describing the microwave pulse
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
-    if gate_object.t_pulse > 0 and gate_object.MW_power!=0:
+    if gate_object.t_pulse != 0 and gate_object.MW_power!=0:
         segment.add_MW_pulse(gate_object.padding, gate_object.t_pulse + gate_object.padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
         segment.reset_time()
         segment.wait(gate_object.padding)

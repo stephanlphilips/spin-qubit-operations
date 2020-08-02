@@ -28,7 +28,7 @@ add_block(INIT, t_init, gates, p_0)
 # add single qubit gates in manip
 
 # add default dc levels
-MANIP.vP1 += 50
+MANIP.vP1 += 20
 
 # define a set 
 xpi2 = single_qubit_gate_spec('qubit1_MW', 1.1e8, 1000, 120, padding=2)
@@ -39,8 +39,6 @@ ss_set.X = xpi2
 ss_set.X2 = xpi
 
 ss_set.X.add(MANIP)
-ss_set.X.add(MANIP)
-ss_set.Y.add(MANIP)
 
 
 # assume 1QD -- elzerman read -- simplified

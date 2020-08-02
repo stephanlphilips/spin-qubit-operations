@@ -3,7 +3,7 @@ from pulse_templates.utility.oper import add_block, add_ramp
 
 
 @template_wrapper
-def cphase_basic(segment, gates, v_exchange_pulse, t_gate, t_ramp):
+def cphase_basic(segment, gate, v_exchange_pulse, t_gate, t_ramp):
 	'''
 	basic cphase, with a linear ramp
 
@@ -18,6 +18,6 @@ def cphase_basic(segment, gates, v_exchange_pulse, t_gate, t_ramp):
 	gates = (gate, )
 	v_exchange_pulse = (v_exchange_pulse, )
 	
-	add_ramp(segment, r_ramp, gates, (0, ), v_exchange_pulse)
+	add_ramp(segment, t_ramp, gates, (0, ), v_exchange_pulse)
 	add_block(segment, t_gate, gates, v_exchange_pulse)
-	add_ramp(segment, r_ramp, gates, (0, ), v_exchange_pulse)
+	add_ramp(segment, t_ramp, gates, (0, ), v_exchange_pulse)

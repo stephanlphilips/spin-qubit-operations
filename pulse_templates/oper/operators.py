@@ -2,12 +2,25 @@
 simple operators for pulses
 
 Pulses
+    * add_stage : add stage level to pulse
 	* jump : jump from point a to point b
 	* wait : wait for a certain time at a point.
 
 '''
 from pulse_templates.utility.template_wrapper import template_wrapper 
 from pulse_templates.utility.oper import add_block, add_ramp
+
+@template_wrapper
+def add_stage(segment, gates, p_0, **kwargs):
+    '''
+    add stage level for the pulse (= default operating point)
+
+    Args:
+        segment (segment_container) : segment to which to add this stuff
+        gates (tuple<str>) : plunger gate names
+        p_0 (tuple <double>) : points for the stage
+    '''
+    wait(segment, gates, -1, p_0, **kwargs)
 
 @template_wrapper
 def jump(segment, gates, t_ramp, p_0, p_1, **kwargs):
@@ -22,6 +35,9 @@ def jump(segment, gates, t_ramp, p_0, p_1, **kwargs):
         p_1 (tuple <double>) : point where to end.
     '''
     # wait at this spot..
+    # gates=gates+('M2',)
+    # p_0=p_0+(1200,)
+    # p_1=p_1+(1200,)
     add_ramp(segment, t_ramp, gates, p_0, p_1)
 
 
@@ -37,6 +53,8 @@ def wait(segment, gates, t_wait, p_0, **kwargs):
         p_0 (tuple <double>) : point where to wait at
     '''
     # wait at this spot..
+    # gates=gates+('M2',)
+    # p_0=p_0+(1200,)
     add_block(segment, t_wait, gates, p_0)
 
 if __name__ == '__main__':
