@@ -46,10 +46,13 @@ if __name__ == '__main__':
     pulse = get_demo_lib('quad')
     seg = pulse.mk_segment()
 
-    gates = ('P1', 'P2')
+    gates = ('vP1', 'vP2')
     
-    p_0 = (-7, -4)
-    p_1 = (-5, -4)
+    p_0 = (0, 0)
+    p_1 = (5, 0)
+    seg.P1  += 1
+    seg.vP1 += 5 
+
     jump(seg, gates, 1000, p_0, p_1)
     wait(seg, gates, 2000, p_1)
     
