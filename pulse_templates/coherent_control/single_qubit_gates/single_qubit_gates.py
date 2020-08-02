@@ -27,14 +27,14 @@ class single_qubit_gate_spec:
     AM_mod : any = None
     PM_mod : any = None
 
-    def add(self, segment):
+    def add(self, segment, reset=True):
         '''
         adds itselves to a segment
 
         Args:
             segment (segment_container) : segement where to add the gate to.
         '''
-        single_qubit_gate_simple(segment, self)
+        single_qubit_gate_simple(segment, self, **{'reset': reset})
 
     def __call__(self, angle):
         '''
@@ -66,7 +66,7 @@ def single_qubit_gate_simple(segment, gate_object,**kwargs):
         gate_object (single_qubit_gate_spec) : gate object describing the microwave pulse
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
-    _load_single_qubit_gate(getattr(segment, gate_object.qubit_name), gate_object)
+    _load_single_qubit_gate(getattr(segment, gate_object.qubit_name), gate_object, **kwargs)
     segment.reset_time()
 
 
@@ -84,7 +84,12 @@ def _load_single_qubit_gate(segment, gate_object,**kwargs):
         segment.reset_time()
         segment.wait(gate_object.padding)
     segment.add_global_phase(gate_object.permanent_phase_shift)
-    segment.reset_time()
+
+    if 'reset' in kwargs:
+        if kwargs['reset'] == True:
+            segment.reset_time()
+    else:
+        segment.reset_time()
 
 
 if __name__ == '__main__':
@@ -105,8 +110,8 @@ if __name__ == '__main__':
     padding = 10
     Q4_Pi2 = single_qubit_gate_spec(qubit, freq, t_drive, amp)
     # # T2* measurement
-    single_qubit_gate_simple(seg, Q4_Pi2)
+    single_qubit_gate_simple(seg, Q4_Pi2, reset=False)
     wait(seg, gates, linspace(10,100), base_level)
     # shorthand syntax
-    Q4_Pi2.add(seg)
+    Q4_Pi2.add(seg, reset=True)
     plot_seg(seg)

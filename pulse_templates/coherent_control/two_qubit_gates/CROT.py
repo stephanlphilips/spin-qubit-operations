@@ -3,9 +3,9 @@ from pulse_templates.utility.oper import add_block, add_ramp
 
 
 @template_wrapper
-def iswap_basic(segment, gates, barrier_gate,v_exchange_pulse_off, v_exchange_pulse_on, v_ac, f_ac, t_gate, t_ramp, padding = 2):
+def CROT_basic(segment, gates, v_exchange_pulse_off, v_exchange_pulse_on, gate_spec, t_ramp, padding = 2):
     '''
-    basic iSWAP, with a linear ramp
+    basic cphase, with a linear ramp
 
     Args:
         segment (segment_container) : segment to which to add this stuff
@@ -19,8 +19,8 @@ def iswap_basic(segment, gates, barrier_gate,v_exchange_pulse_off, v_exchange_pu
     
     add_block(segment, padding, gates, v_exchange_pulse_on)
     for gate, level in zip(gates, v_exchange_pulse_on):
-        getattr(segment, gate).add_block(0, t_gate, level)
-    getattr(segment, barrier_gate).add_sin(0, t_gate, v_ac, f_ac)
+        getattr(segment, gate).add_block(0, gate_spec.t_pulse + gate_spec.padding*2, level)
+    gate_spec.add(segment, reset=False)
     segment.reset_time()
     add_block(segment, padding, gates, v_exchange_pulse_on)
 
@@ -32,12 +32,17 @@ if __name__ == '__main__':
     from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
     from pulse_lib.segments.utility.looping import linspace
     from pulse_templates.oper.operators import wait
+    from pulse_templates.coherent_control.single_qubit_gates.standard_set import single_qubit_gate_spec
     pulse = get_demo_lib('quad')
     seg = pulse.mk_segment()
 
     gates = ('vP1','vB1', 'vP2')
     base_level = (0,0,0)
-    # seg.vP4 += 10
-    wait(seg, gates, 100, base_level)
-    iswap_basic(seg, gates, 'vB1' ,(0,4,0), (0,8,0), 2, 1e8, 100, 10)
+
+    f_qubit  = 1e3
+    t_pulse = 100
+    MW_power = 10  
+    spec = single_qubit_gate_spec('qubit1_MW', f_qubit, t_pulse, MW_power)
+
+    CROT_basic(seg, gates ,(0,4,0), (0,8,0), spec, 10, 5)
     plot_seg(seg)   
