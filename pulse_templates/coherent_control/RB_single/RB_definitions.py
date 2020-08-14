@@ -104,12 +104,14 @@ class single_qubit_gates_clifford_set(object):
         return self.qubit_set[N]
 
     def get_inverting_gate(self, matrix):
+        total_gate = self[0].matrix
         for i in range(len(self)):
-            end_oper = matrix*np.matrix(np.linalg.inv(self[i].matrix))
+            # end_oper = matrix*np.matrix(np.linalg.inv(self[i].matrix))
+            end_oper = matrix.dot(self[i].matrix)
             end_oper *= np.exp(-1j*np.angle(end_oper[0,0]))
-            
-            return i
-
+            end_oper =  end_oper.round(10) # FPE's
+            if (end_oper == total_gate).all():
+                return i
         raise ValueError("Error RB -- no inverting gate found. Is there an error in the set/it it uncomplete?")
 
 if __name__ == '__main__':
