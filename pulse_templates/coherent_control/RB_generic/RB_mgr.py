@@ -30,13 +30,16 @@ class RB_mgr:
         '''
 
         matrix = copy.deepcopy(self.gate_set.qubit_set.PAULI_I.matrix)
-
+        
+        rands = []
         for i in range(N-1):
             rand = random.randrange(0, self.gate_set.size)
             matrix *= self.gate_set.load_clifford_gate(segment, rand, self.mode)
-
-        self.gate_set.load_inverting_clifford(segment, matrix, self.mode)
-
+            rands.append(rand)
+                
+        inv = self.gate_set.load_inverting_clifford(segment, matrix, self.mode)
+        rands.append(inv)
+        return rands
 
 if __name__ == '__main__':
     from pulse_templates.coherent_control.single_qubit_gates.standard_set import single_qubit_std_set
