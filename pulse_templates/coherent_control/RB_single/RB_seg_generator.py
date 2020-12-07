@@ -1,6 +1,7 @@
 from pulse_templates.coherent_control.RB_single.RB_definitions import single_qubit_gates_clifford_set, pauli_I
 from pulse_templates.coherent_control.RB_generic.RB_mgr import RB_mgr
 from pulse_lib.segments.utility.looping import linspace
+import numpy as np
 
 def generature_single_qubit_RB(segment, gate_set, n_gates, n_rand, RB_type='XZ', interleave=None, seed=None):
     '''
@@ -26,9 +27,13 @@ def generature_single_qubit_RB(segment, gate_set, n_gates, n_rand, RB_type='XZ',
 
     RB_mgmt = RB_mgr(gate_set, RB_type, seed)
     
+    cl_n = [[[] for i in range(n_gates.data.size)] for j in range(n_rand)]
     for n in range(n_rand):
         for m in range(n_gates.data.size):
-            RB_mgmt.add_cliffords(getattr(segment, gate_set.qubit)[n,m], int(n_gates.data[m]))
+            rands = RB_mgmt.add_cliffords(getattr(segment, gate_set.qubit)[n,m], int(n_gates.data[m]))
+            cl_n[n][m] = rands
+    
+    return rands
 
 if __name__ == '__main__':
     from pulse_templates.coherent_control.single_qubit_gates.standard_set import single_qubit_std_set
