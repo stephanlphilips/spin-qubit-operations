@@ -109,9 +109,6 @@ def PSB_read_multi(segment, gates, t_ramp, t_read, p_0, p_1, nth_readout=0, disa
         p_1 (tuple<double>) : point after the anticrossing, where the readout should happen.
         disable_trigger (bool) : disable triggerig for digitizer, only for debuggig.
     '''
-    # jump close to (1,1) -- (2,0) wait 100 ns
-    add_block(segment, 500, gates, p_0)
-
     # pulse towards the window and stay for the measurment time
     add_ramp(segment, t_ramp, gates, p_0, p_1)
 
