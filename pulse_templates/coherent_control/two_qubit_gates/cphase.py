@@ -34,5 +34,8 @@ if __name__ == '__main__':
     wait(seg, gates, 100, base_level)
     import numpy as np
     t = linspace(0,50, 50, setvals=np.linspace(0,20,50))
-    cphase_basic(seg, gates, (0,4,0), (0,8,0), t, 10)
+    cphase_basic(seg, gates, (0,4,0), (0,8,0), 1, 20)
+    cphase_basic(seg, gates, (0,4,0), (0,8,0), 10, 20)
+    cphase_basic(seg, gates, (0,4,0), (0,8,0), 20, 20)
+
     plot_seg(seg)   

@@ -33,16 +33,18 @@ if __name__ == '__main__':
     from pulse_lib.segments.utility.looping import linspace
     from pulse_templates.oper.operators import wait
     from pulse_templates.coherent_control.single_qubit_gates.standard_set import single_qubit_gate_spec
+    from pulse_templates.utility.plotting import plot_seg
+    
     pulse = get_demo_lib('quad')
     seg = pulse.mk_segment()
 
-    gates = ('vP1','vB1', 'vP2')
-    base_level = (0,0,0)
+    gates = ('vB0', 'vP1', 'vB1', 'vP2', 'vSD1_P')
+    base_level = (0,0,0,0,0)
 
     f_qubit  = 1e3
     t_pulse = 100
-    MW_power = 10  
+    MW_power = 200  
     spec = single_qubit_gate_spec('qubit1_MW', f_qubit, t_pulse, MW_power)
 
-    CROT_basic(seg, gates ,(0,4,0), (0,8,0), spec, 10, 5)
+    CROT_basic(seg, gates, (0,0,0,0,0), (0,0,160,0,0), spec, 10, 100)
     plot_seg(seg)   

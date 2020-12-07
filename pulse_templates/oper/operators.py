@@ -23,7 +23,7 @@ def add_stage(segment, gates, p_0, **kwargs):
     wait(segment, gates, -1, p_0, **kwargs)
 
 @template_wrapper
-def jump(segment, gates, t_ramp, p_0, p_1, **kwargs):
+def jump(segment, gates, t_ramp, p_0, p_1, reset_time=True, **kwargs):
     '''
     wait at p_0
 
@@ -38,11 +38,11 @@ def jump(segment, gates, t_ramp, p_0, p_1, **kwargs):
     # gates=gates+('M2',)
     # p_0=p_0+(1200,)
     # p_1=p_1+(1200,)
-    add_ramp(segment, t_ramp, gates, p_0, p_1)
+    add_ramp(segment, t_ramp, gates, p_0, p_1, reset_time)
 
 
 @template_wrapper
-def wait(segment, gates, t_wait, p_0, **kwargs):
+def wait(segment, gates, t_wait, p_0, reset_time=True,**kwargs):
     '''
     wait at p_0
 
@@ -55,7 +55,7 @@ def wait(segment, gates, t_wait, p_0, **kwargs):
     # wait at this spot..
     # gates=gates+('M2',)
     # p_0=p_0+(1200,)
-    add_block(segment, t_wait, gates, p_0)
+    add_block(segment, t_wait, gates, p_0, reset_time)
 
 if __name__ == '__main__':
     from pulse_templates.utility.plotting import plot_seg

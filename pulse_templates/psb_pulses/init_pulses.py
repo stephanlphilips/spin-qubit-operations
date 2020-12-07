@@ -57,6 +57,35 @@ def pulse_inter(segment, gates, t_ramp, p_0, p_1, p_2, p_3, **kwargs):
     # move towards anti-crossing, standaard 100ns
     add_ramp(segment, 100, gates, p_2, p_3)
 
+
+@template_wrapper
+def pulse_in_out(segment, gates, t_ramp, t_wait, p_0, p_1, p_2, **kwargs):
+    '''
+    pulse sequence to go adiabatically trough an interdot.
+    The standard time to go from p_0 to p_1 and p_2 to p_3 is 100ns
+
+    Args:
+        segment (segment_container) : segment to which to add this stuff
+        gates (tuple<str>) : plunger gate names
+        t_ramp (double) : time to linearly ramp trought the anticrossing
+        t_wait (double) : time to wait at p1
+        p_0 (tuple <double>) : starting point
+        p_1 (tuple<double>) : point where to wait
+    '''
+    # move towards anti-crossing, standaard 100ns
+    add_ramp(segment, t_ramp, gates, p_0, p_1)
+    add_ramp(segment, t_ramp, gates, p_1, p_2)
+
+    # go though the anti-crossing
+    add_block(segment, t_wait, gates, p_2)
+    
+    # move towards anti-crossing, standaard 100ns
+    add_ramp(segment, t_ramp, gates, p_2, p_1)
+    
+    # move towards anti-crossing, standaard 100ns
+    add_ramp(segment, t_ramp, gates, p_1, p_0)
+
+
 if __name__ == '__main__':
     from pulse_templates.utility.plotting import plot_seg
     from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
@@ -68,16 +97,19 @@ if __name__ == '__main__':
     
     p_0 = (-7, -4)
     p_1 = (-5, -4)
-    pulse_intra(seg, gates, t_wait=1000, t_ramp=2000, p_0=p_0, p_1=p_1, debug = True)
+    # pulse_intra(seg, gates, t_wait=1000, t_ramp=2000, p_0=p_0, p_1=p_1, debug = True)
     
     p_0 = (-3, -4)
     p_1 = (-0, -4)
-    pulse_intra(seg, gates, t_wait=1000, t_ramp=2000, p_0=p_0, p_1=p_1)
+    # pulse_intra(seg, gates, t_wait=1000, t_ramp=2000, p_0=p_0, p_1=p_1)
     
-    p_0 = ( 0, -4)
+    p_0 = ( 0.1, 0.1)
     p_1 = ( 1, -1)
-    p_2 = (-1,  1)
+    p_2 = ( 3, -5)
     p_3 = (-5,  5)
-    pulse_inter(seg, gates, t_ramp=5000, p_0=p_0, p_1=p_1, p_2=p_2, p_3=p_3)
+    # pulse_inter(seg, gates, t_ramp=5000, p_0=p_0, p_1=p_1, p_2=p_2, p_3=p_3)
     
+    # plot_seg(seg)
+
+    pulse_in_out(seg, gates, 100, 1e3, p_0, p_1, p_2)
     plot_seg(seg)

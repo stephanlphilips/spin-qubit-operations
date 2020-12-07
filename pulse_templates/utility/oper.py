@@ -2,7 +2,7 @@
 functions for appling multiple operations at the same time on a segment
 '''
 
-def add_block(segment, t_gate, gates, levels):
+def add_block(segment, t_gate, gates, levels, reset_time=True):
     '''
     add a block to muliple segments at the same time and reset the time.
 
@@ -15,9 +15,10 @@ def add_block(segment, t_gate, gates, levels):
     for gate, level in zip(gates, levels):
         getattr(segment, gate).add_block(0, t_gate, level)
 
-    segment.reset_time()
+    if reset_time == True:
+        segment.reset_time()
 
-def add_ramp(segment, t_gate, gates, level_in, level_out):
+def add_ramp(segment, t_gate, gates, level_in, level_out, reset_time=True):
     '''
     add a block to muliple segments at the same time and reset the time.
 
@@ -30,4 +31,5 @@ def add_ramp(segment, t_gate, gates, level_in, level_out):
     for gate, l_in, l_out in zip(gates, level_in, level_out):
         getattr(segment, gate).add_ramp_ss(0, t_gate, l_in, l_out)
 
-    segment.reset_time()
+    if reset_time == True:
+        segment.reset_time()
