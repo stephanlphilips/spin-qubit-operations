@@ -3,7 +3,7 @@ from pulse_templates.utility.oper import add_block, add_ramp
 
 
 @template_wrapper
-def cphase_basic(segment, gates, v_exchange_pulse_off, v_exchange_pulse_on, t_gate, t_ramp):
+def cphase_basic(segment, gates, v_exchange_pulse_off, v_exchange_pulse_on, t_gate, t_ramp, t_padding=5):
     '''
     basic cphase, with a linear ramp
 
@@ -14,10 +14,11 @@ def cphase_basic(segment, gates, v_exchange_pulse_off, v_exchange_pulse_on, t_ga
         t_gate (double) : total time of the gate not inclusing the ramps
         t_ramp (double) : ramp time
     '''
-
+    add_block(segment, t_padding, gates, tuple([0]*len(gates)))
     add_ramp(segment, t_ramp, gates, v_exchange_pulse_off, v_exchange_pulse_on)
     add_block(segment, t_gate, gates, v_exchange_pulse_on)
     add_ramp(segment, t_ramp, gates, v_exchange_pulse_on, v_exchange_pulse_off)
+    add_block(segment, t_padding, gates, tuple([0]*len(gates)))
 
 
 if __name__ == '__main__':

@@ -26,15 +26,28 @@ class single_qubit_gate_spec:
     padding : Union[float, int] = 1 #left right padding around the MW pulse in ns
     AM_mod : any = None
     PM_mod : any = None
+    _segment_generator : any = None
 
-    def add(self, segment, reset=True):
+    def add(self, segment=None, reset=True, **kwargs):
         '''
         adds itselves to a segment
 
         Args:
             segment (segment_container) : segement where to add the gate to.
         '''
-        single_qubit_gate_simple(segment, self, **{'reset': reset})
+        if segment is None and self._segment_generator is None:
+            raise ValueError('no segment privided')
+        if segment is None:
+            segment = self._segment_generator.generate_segment()
+        
+        if len(kwargs) > 0:
+            cpy = copy.deepcopy(self)
+            for key, value in kwargs.items():
+                setattr(cpy, key, value)
+
+            single_qubit_gate_simple(segment, cpy, reset=reset)
+        else:
+            single_qubit_gate_simple(segment, self, reset=reset)
 
     def __call__(self, angle):
         '''
@@ -46,7 +59,7 @@ class single_qubit_gate_spec:
         Args:
             angle (double) : angle to rotate
         '''
-        cpy = copy.deepcopy(self)
+        cpy = copy.copy(self)
 
         if cpy.MW_power == 0 or cpy.t_pulse ==0:
             cpy.permanent_phase_shift = angle
@@ -55,7 +68,15 @@ class single_qubit_gate_spec:
 
         return cpy
 
-# TODO generic one for multiple single qubit gates
+    def copy(self):
+        copy = single_qubit_gate_spec(self.qubit_name, copy.deepcopy(f_qubit), copy.deepcopy(t_pulse), copy.deepcopy(MW_power), 
+            copy.deepcopy(phase) ,copy.deepcopy(permanent_phase_shift) ,copy.deepcopy(padding))
+        copy.AM_mod = self.AM_mod
+        copy.PM_mod = self.PM_mod
+        copy._segment_generator = self._segment_generator
+
+        return copy
+
 @template_wrapper
 def single_qubit_gate_simple(segment, gate_object,**kwargs):
     '''
@@ -80,6 +101,7 @@ def _load_single_qubit_gate(segment, gate_object,**kwargs):
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
     if gate_object.t_pulse != 0 and gate_object.MW_power!=0:
+        print(gate_object)
         segment.add_MW_pulse(gate_object.padding, gate_object.t_pulse + gate_object.padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
         segment.reset_time()
         segment.wait(gate_object.padding)
@@ -91,7 +113,6 @@ def _load_single_qubit_gate(segment, gate_object,**kwargs):
     else:
         segment.reset_time()
 
-
 if __name__ == '__main__':
     from pulse_templates.utility.plotting import plot_seg
     from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
@@ -101,17 +122,24 @@ if __name__ == '__main__':
     seg = pulse.mk_segment()
 
     gates = ('vP4',)
-    base_level = (10,)
+    base_level = (0,)
     # seg.vP4 += 10
     qubit = 'qubit4_MW'
     t_drive = 100
-    amp = 10
-    freq = 200e8
+    amp = 100
+    freq = 100e6
     padding = 10
     Q4_Pi2 = single_qubit_gate_spec(qubit, freq, t_drive, amp)
+    
     # # T2* measurement
     single_qubit_gate_simple(seg, Q4_Pi2, reset=False)
+
     wait(seg, gates, linspace(10,100), base_level)
     # shorthand syntax
+    Q4_Pi2.add(seg, reset=True)
+    wait(seg, gates, 80, base_level)
+    # shorthand syntax
+    Q4_Pi2.add(seg, reset=True, MW_power = 200)
+    wait(seg, gates, 80, base_level)
     Q4_Pi2.add(seg, reset=True)
     plot_seg(seg)

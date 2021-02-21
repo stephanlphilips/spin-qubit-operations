@@ -46,7 +46,7 @@ def return_pulse_lib_quad_dot():
     # set right association of the real channels with I/Q output.
     IQ_chan_set_1.add_IQ_chan("I_MW", "I")
     IQ_chan_set_1.add_IQ_chan("Q_MW", "Q")
-    IQ_chan_set_1.add_marker("M1", 0, 2000)
+    IQ_chan_set_1.add_marker("M1", -60, 60)
     IQ_chan_set_1.set_LO(1e8)
     IQ_chan_set_1.add_virtual_IQ_channel('qubit1_MW')
     IQ_chan_set_1.add_virtual_IQ_channel('qubit2_MW')
