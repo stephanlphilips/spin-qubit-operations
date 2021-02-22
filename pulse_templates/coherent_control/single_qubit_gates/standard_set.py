@@ -20,18 +20,15 @@ class gate_descriptor:
     def __set__(self, owner, gate_specification):
         if isinstance(gate_specification, single_qubit_gate_spec):
             setattr(gate_specification, '_segment_generator', getattr(owner, 'segment_generator'))
-            print('setting', gate_specification)
             setattr(owner, self.private_name, gate_specification)
         else: 
             raise ValueError('please assign the correct type to the gate (single_qubit_gate_spec type), current type is {}'.format(str(type(gate_specification))))
 
     def __get__(self, owner, objtype=None):
-        print(f'getting {self.name}')
         if self.ref is None and not hasattr(owner, self.private_name):
             raise ValueError("Unable to get {}, gate undefined, please add it to the set.".format(self.gate_name))
 
         if not hasattr(owner, self.private_name):
-            print('call back to singel qubit gates')
             gate_obj = copy.copy(getattr(owner, self.ref))
 
             if self.amp is not None:

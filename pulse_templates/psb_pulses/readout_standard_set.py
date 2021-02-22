@@ -1,22 +1,38 @@
 from pulse_templates.utility.segment_manager import segment_mgr
 from pulse_templates.utility.measurement import measurement
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import copy
 
 
 @dataclass
 class readout_spec:
+    '''
+    spec for readout of the sample
+
+    Args;
+        measurement_obj (measurement) : object that defined what the threshold is/what to measure
+        PSB_call_function (function) : function that generates the segment for the psb readout
+        PSB_call_kwargs (dict) : dictionart containg the kwargs for the function described before.
+        gate_instructions (tuple) : instruction that are excecuted before the readout. This could be a X gate
+    '''
     measurement_obj : measurement
     PSB_call_function : any
     PSB_call_kwargs : dict
+    gate_instructions : tuple = field(default_factory=lambda: tuple())
     _segment_generator : segment_mgr = None
 
     def add(self, segment=None, **kwargs):
         if segment is None and self._segment_generator is None:
             raise ValueError('no segment privided')
         if segment is None:
+            for instruction in self.gate_instructions:
+                instruction.add()
+            
             segment = self._segment_generator.generate_segment()
+        else:
+            for instruction in self.gate_instructions:
+                instruction.add(segment)
 
         self.PSB_call_function(segment, **kwargs)
 

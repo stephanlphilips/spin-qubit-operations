@@ -41,7 +41,7 @@ class single_qubit_gate_spec:
             segment = self._segment_generator.generate_segment()
         
         if len(kwargs) > 0:
-            cpy = copy.deepcopy(self)
+            cpy = copy.copy(self)
             for key, value in kwargs.items():
                 setattr(cpy, key, value)
 
@@ -101,7 +101,6 @@ def _load_single_qubit_gate(segment, gate_object,**kwargs):
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
     if gate_object.t_pulse != 0 and gate_object.MW_power!=0:
-        print(gate_object)
         segment.add_MW_pulse(gate_object.padding, gate_object.t_pulse + gate_object.padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
         segment.reset_time()
         segment.wait(gate_object.padding)
