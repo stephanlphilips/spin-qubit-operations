@@ -156,7 +156,6 @@ class six_dot_sample:
         return self.segment_mgr.segments
 
     def plot_sequence(self):
-        # print(self.segments())
         plot_seg(self.segments())
 
 
@@ -175,7 +174,7 @@ s.wait(5e3).add()
 s.q2.X.add(t_pulse = lp.linspace(0, 1e3, 50, axis=0))
 
 # do a cnot to qubit 4
-s.q23.CNOT12.add()
+s.q23.CNOT12.add(t_gate = 50)
 s.q34.CNOT12.add()
 s.q45.CNOT12.add()
 
@@ -186,4 +185,5 @@ s.read3.add(flip='qubit12')
 s.read56.add()
 s.read4.add(flip='qubit56')
 
-s.plot_sequence()
+# s.plot_sequence()
+

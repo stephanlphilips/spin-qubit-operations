@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Union
 import copy
 
+
 @dataclass
 class single_qubit_gate_spec:
     '''
@@ -43,6 +44,8 @@ class single_qubit_gate_spec:
         if len(kwargs) > 0:
             cpy = copy.copy(self)
             for key, value in kwargs.items():
+                if key not in self.__dict__.keys():
+                    raise ValueError(f'invalid keyword argument detected for single_qubit_gate_spec, {key}, options are {list(self.__dict__.keys())}')
                 setattr(cpy, key, value)
 
             single_qubit_gate_simple(segment, cpy, reset=reset)

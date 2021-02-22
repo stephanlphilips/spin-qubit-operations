@@ -2,8 +2,13 @@ from pulse_templates.utility.segment_manager import segment_mgr
 from pulse_templates.utility.measurement import measurement
 from dataclasses import dataclass, field
 
+import inspect
 import copy
 
+def unwrap(func):
+    while hasattr(func, '__wrapped__'):
+        func = func.__wrapped__
+    return func
 
 @dataclass
 class readout_spec:
@@ -49,6 +54,11 @@ class readout_std_set:
         meas = copy.copy(self.readout_spec.measurement_obj)
         PSB_call_kwargs = copy.copy(self.readout_spec.PSB_call_kwargs)
         
+        valid_kwargs = list(inspect.getfullargspec(unwrap(self.readout_spec.PSB_call_function))[0]) + list(meas.__dict__.keys())
+        for key, value in kwargs.items():
+            if key not in valid_kwargs:
+                raise ValueError(f'Bad keyword detected ({key}) in readout descriptor. Accepected keywords are : {valid_kwargs}')
+
         for key,value in kwargs.items():
             if key in self.__measurement_kwargs:
                 setattr(meas, key, value)

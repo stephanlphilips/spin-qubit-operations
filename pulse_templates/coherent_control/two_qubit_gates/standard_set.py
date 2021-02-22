@@ -1,6 +1,12 @@
 from pulse_templates.utility.segment_manager import segment_mgr
 from dataclasses import dataclass
+import inspect
 import copy
+
+def unwrap(func):
+    while hasattr(func, '__wrapped__'):
+        func = func.__wrapped__
+    return func
 
 @dataclass
 class two_qubit_gate_generic:
@@ -24,7 +30,10 @@ class two_qubit_gate_generic:
             segment = self._segment_generator.generate_segment()
 
         all_kwargs  = copy.copy(self.pulse_kwargs)
+        valid_kwargs = inspect.getfullargspec(unwrap(self.shaping_function))[0]
         for key, value in kwargs.items():
+            if key not in valid_kwargs:
+                raise ValueError(f'Bad keyword detected ({key}) in two qubit descriptor. Accepected keywords are : {valid_kwargs}')
             all_kwargs[key] = value
 
         self.shaping_function(segment, **all_kwargs)
