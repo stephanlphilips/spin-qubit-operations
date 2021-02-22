@@ -174,9 +174,9 @@ s.wait(5e3).add()
 s.q2.X.add(t_pulse = lp.linspace(0, 1e3, 50, axis=0))
 
 # do a cnot to qubit 4
-s.q23.CNOT12.add(t_gate = 50)
-s.q34.CNOT12.add()
-s.q45.CNOT12.add()
+s.q23.CNOT21.add(t_gate = 50)
+s.q34.CNOT21.add()
+s.q45.CNOT21.add()
 
 s.wait(5e3).add()
 
