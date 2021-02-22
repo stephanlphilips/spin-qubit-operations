@@ -12,17 +12,24 @@ class gate_descriptor:
         self.amp = amp
         self.add_phase = add_phase
         self.add_glob_phase = add_glob_phase
+    
+    def __set_name__(self, owner, name):
+        self.name = name
+        self.private_name = '_' + name
 
-    def __get__(self, instance, owner):
-        '''
-        get descriptor of a instance
-        '''
-        gate_obj = instance.__dict__.get(self.gate_name, None)
-        if gate_obj is None and self.ref is None:
+    def __set__(self, owner, gate_specification):
+        if isinstance(gate_specification, single_qubit_gate_spec):
+            setattr(gate_specification, '_segment_generator', getattr(owner, 'segment_generator'))
+            setattr(owner, self.private_name, gate_specification)
+        else: 
+            raise ValueError('please assign the correct type to the gate (single_qubit_gate_spec type), current type is {}'.format(str(type(gate_specification))))
+
+    def __get__(self, owner, objtype=None):
+        if self.ref is None and not hasattr(owner, self.private_name):
             raise ValueError("Unable to get {}, gate undefined, please add it to the set.".format(self.gate_name))
 
-        if gate_obj is None:
-            gate_obj = copy.deepcopy(getattr(instance, self.ref))
+        if not hasattr(owner, self.private_name):
+            gate_obj = copy.copy(getattr(owner, self.ref))
 
             if self.amp is not None:
                 gate_obj.MW_power = self.amp
@@ -30,24 +37,11 @@ class gate_descriptor:
             gate_obj.permanent_phase_shift += self.add_glob_phase
             gate_obj.phase += self.add_phase
 
-        return gate_obj
-    
-    def __set__(self, instance, value):
-        '''
-        overwrite the descritor in the instance
-        '''
-        if not isinstance(value, single_qubit_gate_spec):
-            raise ValueError('please assign the correct type to the gate (single_qubit_gate_spec type), current type is {}'.format(str(type(value))))
-        instance.__dict__[self.gate_name] = value
+            return gate_obj
 
-class descriptor_mgr(type):
-    def __new__(cls, name, bases, attrs):
-        for name, value in attrs.items():
-            if isinstance(value, gate_descriptor):
-                value.gate_name = name
-        return super(descriptor_mgr, cls).__new__(cls, name, bases, attrs)
+        return getattr(owner, self.private_name)
 
-class single_qubit_std_set(metaclass=descriptor_mgr):
+class single_qubit_std_set():
     '''
     Make a set to generate all the clifford for the single qubit RB.
 
@@ -77,6 +71,9 @@ class single_qubit_std_set(metaclass=descriptor_mgr):
 
     qubit_set = single_qubit_gates_clifford_set()
     size = len(qubit_set)
+
+    def __init__(self, segment_generator=None):
+        self.segment_generator = segment_generator
 
     def load_std_gate(self, segment, gate_name):
         '''
@@ -144,9 +141,17 @@ class single_qubit_std_set(metaclass=descriptor_mgr):
         return self.X.qubit_name
 
 if __name__ == '__main__':
+    from pulse_templates.utility.plotting import plot_seg
+    from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
+
     from pulse_templates.coherent_control.single_qubit_gates.single_qubit_gates import single_qubit_gate_spec
+
+
+    pulse = get_demo_lib('quad')
+    seg = pulse.mk_segment()
+    
     test = single_qubit_std_set()
-    test.X = single_qubit_gate_spec('test', 1e9, 100, MW_power=500)
+    test.X = single_qubit_gate_spec('qubit1_MW', 1e9, 100, MW_power=500)
+    print(test.X)
     # create custom Z with custom phase -- 
-    print(test.Z(3.14))
-    print(test.mX(3.14))
+    test.Z(3.14).add(seg, f_qubit=1.12e9)

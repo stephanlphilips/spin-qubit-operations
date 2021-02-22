@@ -75,8 +75,9 @@ def format_name_item(func_name, arg_name, arg_value):
         items = '[ '
         key_values_pairs = list(arg_value.__dict__.items())
         for i in range(len(key_values_pairs)):
-            items += str(key_values_pairs[i][0]) + ' '
-            items += format_name_item(func_name, key_values_pairs[i][0], key_values_pairs[i][1]) + ' '
+            if not key_values_pairs[i][0].startswith('_'): #neglect private variables
+                items += str(key_values_pairs[i][0]) + ' '
+                items += format_name_item(func_name, key_values_pairs[i][0], key_values_pairs[i][1]) + ' '
         return items + ' ]'
 
     if isinstance(arg_value, tuple):
