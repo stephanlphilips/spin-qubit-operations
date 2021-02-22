@@ -104,11 +104,11 @@ if __name__ == '__main__':
     base_level = (10,)
     # seg.vP4 += 10
     qubit = 'qubit4_MW'
-    t_drive = 100
+    t_drive = 1000
     amp = 10
     freq = 200e8
     padding = 10
-    Q4_Pi2 = single_qubit_gate_spec(qubit, freq, t_drive, amp)
+    Q4_Pi2 = single_qubit_gate_spec(qubit, freq, t_drive, amp, AM_mod='flattop')
     # # T2* measurement
     single_qubit_gate_simple(seg, Q4_Pi2, reset=False)
     wait(seg, gates, linspace(10,100), base_level)
