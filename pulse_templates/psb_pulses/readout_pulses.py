@@ -30,7 +30,7 @@ def PSB_read(segment, gates, t_ramp, t_read, p_0, p_1, disable_trigger=False):
     add_ramp(segment, t_ramp, gates, p_0, p_1)
 
     if disable_trigger == False:
-        getattr(segment, gates[0]).add_HVI_marker("dig_wait_1")
+        getattr(segment, gates[0]).add_HVI_marker("dig_trigger_1")
         getattr(segment, gates[0]).add_HVI_variable("t_measure", t_read)
 
     add_block(segment, t_read, gates, p_1)
@@ -50,20 +50,17 @@ def PSB_read_tc_ctrl(segment, gates, t_ramp, t_read, p_0, p_1, p_2, nth_readout,
         p_2 (tuple<double>) : point after the anticrossing, for readout, when the tunnel coupling oig odff
         disable_trigger (bool) : disable triggerig for digitizer, only for debuggig.
     '''
-    # jump close to (1,1) -- (2,0) wait 100 ns
-    add_block(segment, 100, gates, p_0)
-
     # pulse towards the window and stay for the measurment time
     add_ramp(segment, t_ramp, gates, p_0, p_1)
-    add_ramp(segment, 2, gates, p_1, p_2)
+    add_ramp(segment, 10, gates, p_1, p_2)
 
 
     if disable_trigger == False:
-        getattr(segment, gates[0]).add_HVI_marker("dig_wait_{}".format(int(nth_readout)))
+        getattr(segment, gates[0]).add_HVI_marker("dig_trigger_{}".format(int(nth_readout)))
         getattr(segment, gates[0]).add_HVI_variable("t_measure", t_read)
 
     add_block(segment, t_read, gates, p_2)
-    add_ramp(segment, 2, gates, p_2, p_1)
+    add_ramp(segment, 10, gates, p_2, p_1)
     add_ramp(segment, t_ramp, gates, p_1, p_0)
 
 @template_wrapper
@@ -90,7 +87,7 @@ def PSB_read_latched(segment, gates, t_ramp, t_read, p_0, p_1, p_2, disable_trig
 
 
     if disable_trigger == False:
-        getattr(segment, gates[0]).add_HVI_marker("dig_wait_1")
+        getattr(segment, gates[0]).add_HVI_marker("dig_trigger_1")
         getattr(segment, gates[0]).add_HVI_variable("t_measure", t_read)
 
     add_block(segment, t_read, gates, p_2)
@@ -113,10 +110,11 @@ def PSB_read_multi(segment, gates, t_ramp, t_read, p_0, p_1, nth_readout=0, disa
     add_ramp(segment, t_ramp, gates, p_0, p_1)
 
     if disable_trigger == False:
-        getattr(segment, gates[0]).add_HVI_marker("dig_wait_{}".format(int(nth_readout)))
+        getattr(segment, gates[0]).add_HVI_marker("dig_trigger_{}".format(int(nth_readout)))
         getattr(segment, gates[0]).add_HVI_variable("t_measure", t_read)
 
     add_block(segment, t_read, gates, p_1)
+    add_ramp(segment, t_ramp, gates, p_1, p_0)
 
 if __name__ == '__main__':
     from pulse_templates.utility.plotting import plot_seg
