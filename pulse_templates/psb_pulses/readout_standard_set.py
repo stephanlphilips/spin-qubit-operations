@@ -39,7 +39,7 @@ class readout_spec:
             for instruction in self.gate_instructions:
                 instruction.add(segment)
 
-        self.PSB_call_function(segment, **kwargs)
+        self.PSB_call_function(segment, self.measurement_obj, **kwargs)
 
 
 class readout_std_set:
@@ -51,7 +51,8 @@ class readout_std_set:
         self.__measurement_kwargs = ['name', 'chan', 'threshold', 'accept', 'phase', 'flip', '_0_on_high']
     
     def add(self, segment=None, **kwargs):
-        meas = copy.copy(self.readout_spec.measurement_obj)
+        self.readout_spec.measurement_obj = copy.copy(self.readout_spec.measurement_obj)
+        meas = self.readout_spec.measurement_obj
         PSB_call_kwargs = copy.copy(self.readout_spec.PSB_call_kwargs)
         
         valid_kwargs = list(inspect.getfullargspec(unwrap(self.readout_spec.PSB_call_function))[0]) + list(meas.__dict__.keys())
@@ -65,12 +66,13 @@ class readout_std_set:
             else:
                 PSB_call_kwargs[key] = value
 
-        if 't_read' not in PSB_call_kwargs.keys():
-            raise ValueError('Please use the variable name t_read in the PSB call function. -- not able the register the measurment time')
+        if 't_meas' not in PSB_call_kwargs.keys():
+            raise ValueError('Please use the variable name t_meas in the PSB call function. -- not able the register the measurment time')
+
         self.measurement_mgr.add(meas)
         self.readout_spec.add(segment, **PSB_call_kwargs)
 
-        self.measurement_mgr.t_meas = PSB_call_kwargs['t_read']
+        self.measurement_mgr.t_meas = PSB_call_kwargs['t_meas']
 
 
 if __name__ == '__main__':

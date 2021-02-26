@@ -6,9 +6,9 @@ class ALLXY:
     setpoint = loop_obj()
     
     # TODO -- conversion to actual gates combination labels (e.g. II), if qcodes supports it?
-    setpoint.add_data(np.linspace(1,len(allXY_set), len(allXY_set)), axis=-1, labels = 'ALL XY gate id', units='#')
+    setpoint.add_data(np.linspace(1,len(allXY_set), len(allXY_set)), axis=0, labels = 'ALL XY gate id', units='#')
 
-def generate_all_XY(segment, gate_set, axis=-1):
+def generate_all_XY(segment, gate_set, axis=0):
     '''
     generate allXY experiment
 

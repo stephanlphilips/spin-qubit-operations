@@ -64,6 +64,10 @@ class measurement:
 	def set_nth_read(self, n):
 		self.__nth_readout = n
 
+	@property
+	def nth_readout(self):
+		return self.__nth_readout
+
 	def format_raw(self, raw, n_readouts):
 		data_I = np.asarray(raw[self.chan[0]-1])
 		data_I = data_I.reshape([int(data_I.size/n_readouts), n_readouts])[:, self.__nth_readout]
@@ -265,11 +269,11 @@ if __name__ == '__main__':
 	m2=measurement('PSB_12_read', [1,2], threshold=0.5, phase=0.3)
 
 	test_data = np.random.random([50,3,4])
-	d = m1.format_raw(test_data)
+	d = m1.format_raw(test_data, 1)
 	# print(d)
 	idx = np.arange(25)
 	# d = m1.get_meas(test_data, indexes=idx)
-	d = m1.get_selection(test_data)
+	d = m1.get_selection(test_data, 1)
 	# print(d)
 
 	s1= m1.get_setpoints()
@@ -281,5 +285,6 @@ if __name__ == '__main__':
 	m_mngr.add(m1)
 	m_mngr.add(m2)
 	m_mngr.set_repetitions(50)
-
+	print(m1.nth_readout)
+	print(m2.nth_readout)
 	print(m_mngr.generate_setpoints_information())
