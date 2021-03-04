@@ -25,9 +25,7 @@ def plot_seg(segments, idx=0, multi_dim=False):
 
     for ch_name in segments[0].channels:
         for seg in segments:
-            print(segments[0].shape)
             ch = getattr(seg, ch_name)
-            print(ch.pulse_data_all.shape)
             pulse_data_curr_seg = ch.pulse_data_all.flat[idx]
 
             sample_rate = 1e9

@@ -75,14 +75,14 @@ def return_creation_fuction(angle, J_max, delta_B, voltage_to_J_relation):
 
     return cphase_function, duration
 
-def cphase(segment, gates, J, J_max, delta_B, voltage_to_J_relation, padding=5):
+def cphase(segment, gates, cphase_angle, J_max, delta_B, voltage_to_J_relation, padding=5):
     '''
     Makes a shaped cphase gate (with respect to adiabaticity)
 
     Args:
         segment (segment_container) : segment to which to add this stuff
         gates (list<str>) : list of gates involved in the cphase gate
-        J (double) : the angle to rotate (amount of J to apply (MHz))
+        cphase_angle (double) : the angle to rotate (amount of J to apply (MHz))
         J_max (double) : the maximal value of J that should be applied (e.g. cosine window get converted into a tuckey one)
         delta_B (double) : frequency difference between the qubits (MHz).
         voltage_to_J_relation (list<func>) : function that returns the voltages to be applied for a certain amount of J
@@ -97,17 +97,17 @@ def cphase(segment, gates, J, J_max, delta_B, voltage_to_J_relation, padding=5):
     if len(gates) != len(voltage_to_J_relation):
         raise ValueError(f'found {len(gates)} gates and {len(len(voltage_to_J_relation))} voltage_to_J_relation\'s, something must be wrong here.')
     
-    if isinstance(J, loop_obj):
-        t_gate = copy.copy(J)
-        padding_ = copy.copy(J) #little hack, something goes wrong when calling reset_time on custom_pulse
+    if isinstance(cphase_angle, loop_obj):
+        t_gate = copy.copy(cphase_angle)
+        padding_ = copy.copy(cphase_angle) #little hack, something goes wrong when calling reset_time on custom_pulse
         amplitudes = tuple()
         pulse_templates = tuple()
 
         for i in range(len(gates)):
-            functions = copy.copy(J)
-            functions.data = np.empty(J.data.shape, dtype=object)
+            functions = copy.copy(cphase_angle)
+            functions.data = np.empty(cphase_angle.data.shape, dtype=object)
             for j in range(t_gate.data.size):
-                func, duration = return_creation_fuction(J.data[i], J_max, delta_B, voltage_to_J_relation[i])
+                func, duration = return_creation_fuction(cphase_angle.data[i], J_max, delta_B, voltage_to_J_relation[i])
                 t_gate.data[j] = duration
                 functions.data[j] = func
                 padding_.data[j] = padding + 1e-3*j
@@ -122,10 +122,11 @@ def cphase(segment, gates, J, J_max, delta_B, voltage_to_J_relation, padding=5):
         pulse_templates = tuple()
 
         for i in range(len(gates)):
-            func, duration = return_creation_fuction(J, J_max, delta_B, voltage_to_J_relation[i])
+            func, duration = return_creation_fuction(cphase_angle, J_max, delta_B, voltage_to_J_relation[i])
             t_gate = duration
             amplitudes += (1,)
             pulse_templates += (func, )
+
     add_block(segment, padding, gates, tuple([0]*len(gates)))
     add_pulse_template(segment, t_gate, gates, amplitudes, pulse_templates)
     add_block(segment, padding, gates, tuple([0]*len(gates)))
@@ -148,10 +149,12 @@ if __name__ == '__main__':
 
     v_exchange_pulse_off =  (0,0,0)
     v_exchange_pulse_on  = (0,50,0)
+    
     def return_amp(amp):
         def J_pulse(x):
             return np.sqrt(x)/np.sqrt(5e6)*amp
         return J_pulse
+
     # func, time = return_creation_fuction(np.pi-0.7, 5e6, 30e6, voltage_to_J_relation=J_pulse)
     # points = func(time, 1e9, 1)
     # plt.plot(points)
