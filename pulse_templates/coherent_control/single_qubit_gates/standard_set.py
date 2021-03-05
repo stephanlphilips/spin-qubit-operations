@@ -1,5 +1,5 @@
 from pulse_templates.coherent_control.RB_single.RB_definitions import single_qubit_gates_clifford_set
-from pulse_templates.coherent_control.single_qubit_gates.single_qubit_gates import single_qubit_gate_spec, _load_single_qubit_gate, single_qubit_gate_simple
+from pulse_templates.coherent_control.single_qubit_gates.single_qubit_gates import single_qubit_gate_spec, _load_single_qubit_gate, single_qubit_gate_simple, gate_sequence_spec
 from pulse_lib.segments.segment_container import segment_container
 
 import numpy as np
@@ -8,6 +8,8 @@ import copy
 class gate_descriptor:
     def __init__(self, ref_gate = None, amp = None, add_phase = 0, add_glob_phase = 0):
         self.gate_name = None
+        if not isinstance(ref_gate, tuple):
+            ref_gate = (ref_gate, )
         self.ref = ref_gate
         self.amp = amp
         self.add_phase = add_phase
@@ -29,15 +31,16 @@ class gate_descriptor:
             raise ValueError("Unable to get {}, gate undefined, please add it to the set.".format(self.gate_name))
 
         if not hasattr(owner, self.private_name):
-            gate_obj = copy.copy(getattr(owner, self.ref))
+            g = gate_sequence_spec([])
+            for ref in self.ref:
+                gate_obj = copy.copy(getattr(owner, ref))
+                if self.amp is not None:
+                    gate_obj.MW_power = self.amp
 
-            if self.amp is not None:
-                gate_obj.MW_power = self.amp
-
-            gate_obj.permanent_phase_shift += self.add_glob_phase
-            gate_obj.phase += self.add_phase
-
-            return gate_obj
+                gate_obj.permanent_phase_shift += self.add_glob_phase
+                gate_obj.phase += self.add_phase
+                g+= gate_obj
+            return g
 
         return getattr(owner, self.private_name)
 
@@ -52,39 +55,40 @@ class single_qubit_std_set():
         * X and X2
         * the reset will be derived from the others
     '''
-    I = gate_descriptor('X90', amp = 0)
+    # NMR notation
+    I = gate_descriptor('X', amp = 0)
     X = gate_descriptor()
-    Y = gate_descriptor('X90', add_phase=np.pi/2)
-    Z = gate_descriptor('X90', amp = 0, add_glob_phase=np.pi/2)
-
-    X90 = gate_descriptor('X')
-    Y90 = gate_descriptor('X90', add_phase=np.pi/2)
-    Z90 = gate_descriptor('X90', amp = 0, add_glob_phase=np.pi/2)
+    Y = gate_descriptor('X', add_phase=np.pi/2)
+    Z = gate_descriptor('X', amp = 0, add_glob_phase=np.pi/2)
 
     mX = gate_descriptor('X', add_phase=-np.pi)
     mY = gate_descriptor('X', add_phase=-np.pi/2)
     mZ = gate_descriptor('X', amp = 0, add_glob_phase=-np.pi/2)
 
-    mX90 = gate_descriptor('X90', add_phase=-np.pi)
-    mY90 = gate_descriptor('X90', add_phase=-np.pi/2)
-    mZ90 = gate_descriptor('X90', amp = 0, add_glob_phase=-np.pi/2)
-
-    
-    X2 = gate_descriptor()
+    X2 = gate_descriptor(('X', 'X'))
     Y2 = gate_descriptor('X2', add_phase=np.pi/2)
     Z2 = gate_descriptor('X', amp = 0, add_glob_phase=np.pi)
-
-    X180 = gate_descriptor('X2')
-    Y180 = gate_descriptor('X180', add_phase=np.pi/2)
-    Z180 = gate_descriptor('X90', amp = 0, add_glob_phase=np.pi)
 
     mX2 = gate_descriptor('X2', add_phase=-np.pi)
     mY2 = gate_descriptor('X2', add_phase=-np.pi/2)
     mZ2 = gate_descriptor('X', amp = 0, add_glob_phase=-np.pi)
 
-    mX180 = gate_descriptor('X2', add_phase=-np.pi)
-    mY180 = gate_descriptor('X2', add_phase=-np.pi/2)
-    mZ180 = gate_descriptor('X', amp = 0, add_glob_phase=-np.pi)
+    # transmon notation
+    X90 = gate_descriptor('X')
+    Y90 = gate_descriptor('X90', add_phase=np.pi/2)
+    Z90 = gate_descriptor('X90', amp = 0, add_glob_phase=np.pi/2)
+
+    mX90 = gate_descriptor('X90', add_phase=-np.pi)
+    mY90 = gate_descriptor('X90', add_phase=-np.pi/2)
+    mZ90 = gate_descriptor('X90', amp = 0, add_glob_phase=-np.pi/2)
+
+    X180 = gate_descriptor(('X90', 'X90'))
+    Y180 = gate_descriptor('X180', add_phase=np.pi/2)
+    Z180 = gate_descriptor('X90', amp = 0, add_glob_phase=np.pi)
+
+    mX180 = gate_descriptor('X180', add_phase=-np.pi)
+    mY180 = gate_descriptor('X180', add_phase=-np.pi/2)
+    mZ180 = gate_descriptor('X90', amp = 0, add_glob_phase=-np.pi)
 
 
     qubit_set = single_qubit_gates_clifford_set()
@@ -169,7 +173,22 @@ if __name__ == '__main__':
     seg = pulse.mk_segment()
     
     test = single_qubit_std_set()
-    test.X = single_qubit_gate_spec('qubit1_MW', 1e9, 100, MW_power=500)
-    print(test.X)
+    test.X = single_qubit_gate_spec('qubit1_MW', 1e9, 100, MW_power=500, padding = 10)
+    # test.wait(seg, 100)
     # create custom Z with custom phase -- 
-    test.Z(3.14).add(seg, f_qubit=1.12e9)
+    # test.Z(3.14).add(seg, f_qubit=1.12e9)
+    # print(test.Z)
+    # a = test.Z
+
+
+    # print(test.Z(0))
+    # test.Z(0).add(seg)
+    # # test.Y2.add(seg)
+    test.X180.add(seg)
+
+    print('start second gate')
+    # print(test.X)
+    # print(test.X90)
+    test.Y180.add(seg)
+
+    plot_seg(seg)

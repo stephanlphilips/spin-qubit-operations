@@ -61,19 +61,15 @@ class single_qubit_gate_spec:
         '''
         fuction that allows for easy mod of the object:
 
-        if the time/amp are zero, a z phase will be added
-        else, to the current gate, the phase will be counted up
-
         Args:
             angle (double) : angle to rotate
         '''
         cpy = copy.copy(self)
 
-        if cpy.MW_power == 0 or cpy.t_pulse ==0:
+        if self.t_pulse == 0 or self.MW_power==0:
             cpy.permanent_phase_shift = angle
-        else:
-            cpy.phase += angle
 
+        cpy.phase += angle
         return cpy
 
     def copy(self):
@@ -84,6 +80,70 @@ class single_qubit_gate_spec:
         copy._segment_generator = self._segment_generator
 
         return copy
+
+class gate_sequence_spec:
+    '''
+    concatened set of single_qubit_gate_spec's
+    '''
+    def __init__(self, gates=[]):
+        self.gates = gates
+        self._phase = 0
+        self._permanent_phase_shift = 0
+
+    def __add__(self, other):
+        if isinstance(other, single_qubit_gate_spec):
+            self.gates.append(other)
+        elif isinstance(other, gate_sequence_spec):
+            self.gates += other.gates
+        else:
+            raise ValueError('invalid input provided.')
+
+        return self
+
+    @property
+    def phase(self):
+        return self._phase
+
+    @phase.setter
+    def phase(self, value):
+        for gate in self.gates:
+            gate.phase += value
+        self._phase += value
+
+    @property
+    def permanent_phase_shift(self):
+        return self._permanent_phase_shift
+
+    @phase.setter
+    def permanent_phase_shift(self, value):
+        for gate in self.gates:
+            gate.permanent_phase_shift += value
+        self._permanent_phase_shift += value
+
+
+    def add(self, segment=None, reset=True, **kwargs):
+        for gate in self.gates:
+            gate.add(segment, reset, **kwargs)
+
+    def copy(self):
+        copy_set = []
+        for gate in self.gates:
+            copy_set.append(copy.copy(gate))
+        return gate_sequence_spec(copy_set)
+
+    def __call__(self, angle):
+        copy_set = copy.copy(self)
+        for i in range(len(copy_set.gates)):
+            copy_set.gates[i] = copy_set.gates[i](angle)
+        return copy_set
+
+    def __repr__(self):
+        info = 'sigle qubit gate collection :\n'
+        for gate in self.gates:
+            info += '\t' + str(gate) + '\n'
+        return info
+
+
 
 # @template_wrapper
 def single_qubit_gate_simple(segment, gate_object,**kwargs):

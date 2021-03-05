@@ -16,14 +16,7 @@ def integrate_array(array):
 		integral[i] = integral[i-1] + array[i]
 	return integral
 
-
-test = np.linspace(-500, 580)
-
-a =integrate_array(test)
-print(test)
-print(a)
-
-import matplotlib.pyplot as plt
-plt.plot(a)
-plt.plot(test)
-plt.show()
+a = (5,)
+b = (5,6)
+print(tuple(a))
+print(tuple(b))
