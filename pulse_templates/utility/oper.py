@@ -1,6 +1,23 @@
 '''
 functions for appling multiple operations at the same time on a segment
 '''
+def add_pulse_template(segment, t_gate, gates, amplitudes, pulse_templates, reset_time = True):
+    '''
+    Add a templated smooth functoin to the pulse template
+
+    Args:
+        segment (segment_container) : segment to which to add this stuff
+        t_gate (double) : time of the block pulse
+        gates (tuple<str>) : names of the gates to which to add the block
+        amplitudes (tuple<double>) : amplitudes per channel of the final output function 
+        pulse_templates (tuple<func>) : templates to add the seqeuence
+
+    '''
+    for gate, amplitude,pulse_template in zip(gates, amplitudes, pulse_templates):
+        getattr(segment, gate).add_custom_pulse(0, t_gate, amplitude, pulse_template)
+
+    if reset_time == True:
+        segment.reset_time()
 
 def add_block(segment, t_gate, gates, levels, reset_time=True):
     '''
@@ -8,8 +25,8 @@ def add_block(segment, t_gate, gates, levels, reset_time=True):
 
     Args:
         segment (segment_container) : segment to which to add this stuff
+        t_gate (double) : time of the block pulse
         gates (tuple<str>) : names of the gates to which to add the block
-        t_block (double) : time of the block pulse
         levels (tuple <double>) : levels of the block pulse
     '''
     for gate, level in zip(gates, levels):
