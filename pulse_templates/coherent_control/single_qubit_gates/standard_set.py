@@ -52,22 +52,40 @@ class single_qubit_std_set():
         * X and X2
         * the reset will be derived from the others
     '''
-    I = gate_descriptor('X', amp = 0)
+    I = gate_descriptor('X90', amp = 0)
     X = gate_descriptor()
-    Y = gate_descriptor('X', add_phase=np.pi/2)
-    Z = gate_descriptor('X', amp = 0, add_glob_phase=np.pi/2)
-    
+    Y = gate_descriptor('X90', add_phase=np.pi/2)
+    Z = gate_descriptor('X90', amp = 0, add_glob_phase=np.pi/2)
+
+    X90 = gate_descriptor('X')
+    Y90 = gate_descriptor('X90', add_phase=np.pi/2)
+    Z90 = gate_descriptor('X90', amp = 0, add_glob_phase=np.pi/2)
+
     mX = gate_descriptor('X', add_phase=-np.pi)
     mY = gate_descriptor('X', add_phase=-np.pi/2)
     mZ = gate_descriptor('X', amp = 0, add_glob_phase=-np.pi/2)
+
+    mX90 = gate_descriptor('X90', add_phase=-np.pi)
+    mY90 = gate_descriptor('X90', add_phase=-np.pi/2)
+    mZ90 = gate_descriptor('X90', amp = 0, add_glob_phase=-np.pi/2)
+
     
     X2 = gate_descriptor()
     Y2 = gate_descriptor('X2', add_phase=np.pi/2)
     Z2 = gate_descriptor('X', amp = 0, add_glob_phase=np.pi)
-    
+
+    X180 = gate_descriptor('X2')
+    Y180 = gate_descriptor('X180', add_phase=np.pi/2)
+    Z180 = gate_descriptor('X90', amp = 0, add_glob_phase=np.pi)
+
     mX2 = gate_descriptor('X2', add_phase=-np.pi)
     mY2 = gate_descriptor('X2', add_phase=-np.pi/2)
     mZ2 = gate_descriptor('X', amp = 0, add_glob_phase=-np.pi)
+
+    mX180 = gate_descriptor('X2', add_phase=-np.pi)
+    mY180 = gate_descriptor('X2', add_phase=-np.pi/2)
+    mZ180 = gate_descriptor('X', amp = 0, add_glob_phase=-np.pi)
+
 
     qubit_set = single_qubit_gates_clifford_set()
     size = len(qubit_set)

@@ -8,7 +8,7 @@ import numpy as np
 class hardware(hw.harware_parent):
 
     def __init__(self, name):
-        super().__init__(name, "_settings_quad_dot")
+        super().__init__(name, "_settings_quad_dot_")
 
         virtual_gate_set_1 =  hw.virtual_gate('general',["B0", "P1", "B1", "P2", "B2", "P3", "B3", "P4", "B4", "P5", "B5", "P6", "B6", "S1", "S6", "SD1_P", "SD2_P"  ])
         self.virtual_gates.append(virtual_gate_set_1)

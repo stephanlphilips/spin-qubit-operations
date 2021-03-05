@@ -86,4 +86,4 @@ def format_name_item(func_name, arg_name, arg_value):
             items.append(format_name_item(func_name, arg_name, i))
         return str(tuple(items))
 
-    raise ValueError('Invalid input provided for function {}. Valid input arguments are Numeric/loop_obj types or tuples of those.'.format(func_name))
+    raise ValueError(f'Invalid input provided for function {func_name}. Valid input arguments are Numeric/loop_obj types or tuples of those (arg = {arg_name}, val = {arg_value})')

@@ -2,7 +2,7 @@ from pulse_templates.utility.template_wrapper import template_wrapper
 from pulse_templates.utility.oper import add_block, add_ramp
 
 from pulse_lib.segments.utility.looping import loop_obj
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Union
 import copy
 
@@ -27,6 +27,7 @@ class single_qubit_gate_spec:
     padding : Union[float, int] = 1 #left right padding around the MW pulse in ns
     AM_mod : any = None
     PM_mod : any = None
+    phase_corrections : dict = field(default_factory=dict)
     _segment_generator : any = None
 
     def add(self, segment=None, reset=True, **kwargs):
@@ -51,6 +52,10 @@ class single_qubit_gate_spec:
             single_qubit_gate_simple(segment, cpy, reset=reset)
         else:
             single_qubit_gate_simple(segment, self, reset=reset)
+
+        for qubit_name, permanent_phase_shift in self.phase_corrections.items():
+            seg_qubit = getattr(segment, qubit_name)
+            seg_qubit.add_global_phase(permanent_phase_shift) 
 
     def __call__(self, angle):
         '''
@@ -80,7 +85,7 @@ class single_qubit_gate_spec:
 
         return copy
 
-@template_wrapper
+# @template_wrapper
 def single_qubit_gate_simple(segment, gate_object,**kwargs):
     '''
     add a single qubit gate
@@ -120,7 +125,7 @@ if __name__ == '__main__':
     from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
     from pulse_lib.segments.utility.looping import linspace
     from pulse_templates.oper.operators import wait
-    pulse = get_demo_lib('quad')
+    pulse = get_demo_lib('six')
     seg = pulse.mk_segment()
 
     gates = ('vP4',)
@@ -131,7 +136,7 @@ if __name__ == '__main__':
     amp = 10
     freq = 200e8
     padding = 10
-    Q4_Pi2 = single_qubit_gate_spec(qubit, freq, t_drive, amp, AM_mod='flattop')
+    Q4_Pi2 = single_qubit_gate_spec(qubit, freq, t_drive, amp, AM_mod='flattop', phase_corrections={'qubit2_MW' : 0.23})
 
     # # T2* measurement
     single_qubit_gate_simple(seg, Q4_Pi2, reset=False)

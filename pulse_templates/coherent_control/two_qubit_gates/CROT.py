@@ -2,7 +2,7 @@ from pulse_templates.utility.template_wrapper import template_wrapper
 from pulse_templates.utility.oper import add_block, add_ramp
 
 
-@template_wrapper
+# @template_wrapper
 def CROT_basic(segment, gates, v_exchange_pulse_off, v_exchange_pulse_on, gate_spec, t_ramp, padding = 2):
     '''
     basic cphase, with a linear ramp
