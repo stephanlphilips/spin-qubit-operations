@@ -104,7 +104,6 @@ def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, voltage_to_J_relat
 
     if isinstance(iswap_angle, loop_obj):
         t_gate = copy.copy(iswap_angle)
-        padding_ = copy.copy(iswap_angle) #little hack, something goes wrong when calling reset_time on custom_pulse
         amplitudes = tuple()
         pulse_templates = tuple()
 
@@ -115,13 +114,11 @@ def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, voltage_to_J_relat
                 func, duration = return_creation_fuction(iswap_angle.data[j], phase, J_max, delta_B, voltage_to_J_relation[i], f_res_to_J_relation)
                 t_gate.data[j] = duration
                 functions.data[j] = func
-                padding_.data[j] = padding + 1e-3*j
 
             pulse_templates += (functions, )
             amplitudes += (1,)
-        padding = padding_
+
     elif isinstance(phase, loop_obj):
-        padding_ = copy.copy(phase) #little hack, something goes wrong when calling reset_time on custom_pulse
         amplitudes = tuple()
         pulse_templates = tuple()
 
@@ -132,11 +129,9 @@ def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, voltage_to_J_relat
                 func, duration = return_creation_fuction(iswap_angle, phase.data[j], J_max, delta_B, voltage_to_J_relation[i], f_res_to_J_relation)
                 t_gate = duration
                 functions.data[j] = func
-                padding_.data[j] = padding + 1e-3*j
 
             pulse_templates += (functions, )
             amplitudes += (1,)
-        padding = padding_
 
     else:
         t_gate = 0

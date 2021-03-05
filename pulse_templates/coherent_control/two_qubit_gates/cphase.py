@@ -99,7 +99,6 @@ def cphase(segment, gates, cphase_angle, J_max, delta_B, voltage_to_J_relation, 
     
     if isinstance(cphase_angle, loop_obj):
         t_gate = copy.copy(cphase_angle)
-        padding_ = copy.copy(cphase_angle) #little hack, something goes wrong when calling reset_time on custom_pulse
         amplitudes = tuple()
         pulse_templates = tuple()
 
@@ -110,12 +109,10 @@ def cphase(segment, gates, cphase_angle, J_max, delta_B, voltage_to_J_relation, 
                 func, duration = return_creation_fuction(cphase_angle.data[i], J_max, delta_B, voltage_to_J_relation[i])
                 t_gate.data[j] = duration
                 functions.data[j] = func
-                padding_.data[j] = padding + 1e-3*j
 
             pulse_templates += (functions, )
             amplitudes += (1,)
 
-        padding = padding_
     else:
         t_gate = 0
         amplitudes = tuple()

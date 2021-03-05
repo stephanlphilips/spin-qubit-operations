@@ -1,3 +1,5 @@
+from pulse_lib.segments.utility.data_handling_functions import find_common_dimension, update_dimension
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,9 +25,18 @@ def plot_seg(segments, idx=0, multi_dim=False):
         data_x[ch_name] = list()
         data_y[ch_name] = list()
 
+    _shape = (1,)
+    for seg_container in segments:
+            seg_container.enter_rendering_mode()
+            _shape = find_common_dimension(seg_container.shape, _shape)
+
+    for seg_container in segments:
+        for ch_name in segments[0].channels:
+            data = update_dimension(getattr(seg_container, ch_name)._pulse_data_all, _shape, True)
+            setattr(getattr(seg_container, ch_name), '_pulse_data_all', data)
+
     for ch_name in segments[0].channels:
         for seg in segments:
-            seg.enter_rendering_mode()
             ch = getattr(seg, ch_name)
             pulse_data_curr_seg = ch.pulse_data_all.flat[idx]
 
