@@ -169,7 +169,7 @@ if __name__ == '__main__':
     from pulse_templates.coherent_control.single_qubit_gates.single_qubit_gates import single_qubit_gate_spec
 
 
-    pulse = get_demo_lib('quad')
+    pulse = get_demo_lib('six')
     seg = pulse.mk_segment()
     
     test = single_qubit_std_set()

@@ -30,11 +30,14 @@ class two_qubit_gate_generic:
             segment = self._segment_generator.generate_segment()
 
         all_kwargs  = copy.copy(self.pulse_kwargs)
-        valid_kwargs = inspect.getfullargspec(unwrap(self.shaping_function))[0]
+        valid_kwargs = inspect.getfullargspec(unwrap(self.shaping_function))[0] + ['phase_corrections']
         for key, value in kwargs.items():
             if key not in valid_kwargs:
                 raise ValueError(f'Bad keyword detected ({key}) in two qubit descriptor. Accepected keywords are : {valid_kwargs}')
-            all_kwargs[key] = value
+            if key == 'phase_corrections':
+                self.phase_corrections = value
+            else:
+                all_kwargs[key] = value
 
         self.shaping_function(segment, **all_kwargs)
 
@@ -127,7 +130,7 @@ if __name__ == '__main__':
 
     from pulse_templates.coherent_control.two_qubit_gates.cphase import cphase_basic
     from pulse_templates.utility.segment_manager import segment_mgr
-    pulse = get_demo_lib('quad')
+    pulse = get_demo_lib('six')
     seg = pulse.mk_segment()
     ss = segment_mgr(pulse)
     gates = ('vP1','vB1', 'vP2')
@@ -158,11 +161,11 @@ if __name__ == '__main__':
     wait(seg, gates, 250, base_level)
     
     # single gate
-    two_qubit_gate_spec.cphase.add(t_gate=200)
+    two_qubit_gate_spec.cphase.add(t_gate=200, phase_corrections={'qubit1_MW': 0.25})
 
     wait(seg, gates, 250, base_level)
     
     # composite gate
     two_qubit_gate_spec.SWAP.add()
 
-    plot_seg(ss.segments)
+    # plot_seg(ss.segments)

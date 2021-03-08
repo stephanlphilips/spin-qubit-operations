@@ -99,14 +99,16 @@ def cphase(segment, gates, cphase_angle, J_max, delta_B, voltage_to_J_relation, 
     
     if isinstance(cphase_angle, loop_obj):
         t_gate = copy.copy(cphase_angle)
+        t_gate.data = np.zeros(cphase_angle.data.shape)
         amplitudes = tuple()
         pulse_templates = tuple()
+
 
         for i in range(len(gates)):
             functions = copy.copy(cphase_angle)
             functions.data = np.empty(cphase_angle.data.shape, dtype=object)
             for j in range(t_gate.data.size):
-                func, duration = return_creation_fuction(cphase_angle.data[i], J_max, delta_B, voltage_to_J_relation[i])
+                func, duration = return_creation_fuction(cphase_angle.data[j], J_max, delta_B, voltage_to_J_relation[i])
                 t_gate.data[j] = duration
                 functions.data[j] = func
 
@@ -136,10 +138,11 @@ if __name__ == '__main__':
     from pulse_templates.oper.operators import wait
     import matplotlib.pyplot as plt
 
-    pulse = get_demo_lib('quad')
+    pulse = get_demo_lib('six')
     seg = pulse.mk_segment()
 
-    gates = ('vP1','vB1', 'vP2')
+
+    gates = ('vB1', )
     J = np.pi
     J_max = 5e6
     delta_B = 30e6
@@ -152,12 +155,18 @@ if __name__ == '__main__':
             return np.sqrt(x)/np.sqrt(5e6)*amp
         return J_pulse
 
+    import good_morning.static.J12 as J12
+
     # func, time = return_creation_fuction(np.pi-0.7, 5e6, 30e6, voltage_to_J_relation=J_pulse)
     # points = func(time, 1e9, 1)
     # plt.plot(points)
-    gate_phases = linspace(np.pi/2, 3*np.pi/2, 10, axis=0)
-    cphase(seg, gates, gate_phases, J_max, delta_B, (return_amp(0.2), return_amp(1), return_amp(0.23)))
+    gate_phases = linspace(0, np.pi*2, 20, axis=0)
+    cphase(seg, gates, gate_phases, J_max, delta_B, (return_amp(0.2),), padding=30)
+
+    # cphase(seg, gates, gate_phases, J_max, delta_B, (return_amp(0.2), return_amp(1), return_amp(0.23)), padding=30)
 
     # cphase_basic(seg, gates, v_exchange_pulse_off, v_exchange_pulse_on, gate_phases*100, t_ramp=50)
-    plot_seg(seg, 1)
+    plot_seg(seg, 0)
+    plot_seg(seg, 5)
+    plot_seg(seg, 10)
     plt.show()

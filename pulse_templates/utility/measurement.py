@@ -48,7 +48,7 @@ class measurement:
 	threshold : float   = None
 	accept : int        = -1
 	phase : float  		= None
-	flip : str			= None
+	flip : tuple		= None
 	_0_on_high : bool   = True
 	__nth_readout : int = 0
 	
@@ -104,9 +104,13 @@ class measurement:
 			return (self.format_raw(raw)[0], np.average(self.format_raw(raw)))
 
 		if self.flip is not None:
-			if self.flip not in qubit_outcomes.keys():
+			flipper = list(set(self.flip) & set(qubit_outcomes.keys()))
+			if len(flipper) == 0:
 				raise ValueError(f'flipping on {self.flip} is not present in any of the measurement names? Please check your naming')
-			meas_points = np.bitwise_xor(meas_points, np.invert(qubit_outcomes[self.flip]))
+			elif len(flipper) != 1:
+				raise ValueError(f'Unabigues flip operator, found keys the following keys {qubit_outcomes.keys()}, and accept {self.flip}')
+			flipper = flipper[0]
+			meas_points = np.bitwise_xor(meas_points, np.invert(qubit_outcomes[flipper]))
 		if len(indexes) == 0:
 			return (meas_points, 0 ,)
 		
@@ -120,8 +124,8 @@ class measurement:
 		s.shapes = ((n_rep,),)
 		s.setpoints = (tuple(np.arange(n_rep)),)
 		s.setpoint_shapes = ((n_rep,),)
-		s.setpoint_names =  (f'measurement_trigger_{self.__nth_readout}_ch{self.chan[0]}_ch{self.chan[1]}',)
-		s.setpoint_labels = (f'measurement trigger {self.__nth_readout} ch{self.chan[0]} and ch{self.chan[1]}',)
+		s.setpoint_names =  (f'raw_measurement_trigger_{self.__nth_readout}_ch{self.chan[0]}_ch{self.chan[1]}',)
+		s.setpoint_labels = (f'measurement trigger (raw) {self.__nth_readout} ch{self.chan[0]} and ch{self.chan[1]}',)
 		s.setpoint_units =  ('#',)
 
 		if self.phase is None:

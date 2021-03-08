@@ -97,7 +97,6 @@ class gate_sequence_spec:
             self.gates += other.gates
         else:
             raise ValueError('invalid input provided.')
-
         return self
 
     @property
@@ -143,7 +142,16 @@ class gate_sequence_spec:
             info += '\t' + str(gate) + '\n'
         return info
 
+    def __iter__(self):
+        self.__nth_iter = 0
+        return self
 
+    def __next__(self):
+        if self.__nth_iter < len(self.gates):
+            self.__nth_iter += 1
+            return self.gates[self.__nth_iter-1]
+        else:
+          raise StopIteration
 
 # @template_wrapper
 def single_qubit_gate_simple(segment, gate_object,**kwargs):
@@ -155,8 +163,12 @@ def single_qubit_gate_simple(segment, gate_object,**kwargs):
         gate_object (single_qubit_gate_spec) : gate object describing the microwave pulse
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
-    _load_single_qubit_gate(getattr(segment, gate_object.qubit_name), gate_object, **kwargs)
-    segment.reset_time()
+    if isinstance(gate_object, gate_sequence_spec):
+        for gate in gate_object:
+            single_qubit_gate_simple(segment, gate, **kwargs)
+    else:
+        _load_single_qubit_gate(getattr(segment, gate_object.qubit_name), gate_object, **kwargs)
+        segment.reset_time()
 
 
 def _load_single_qubit_gate(segment, gate_object,**kwargs):
@@ -168,17 +180,21 @@ def _load_single_qubit_gate(segment, gate_object,**kwargs):
         gate_object (single_qubit_gate_spec) : gate object describing the microwave pulse
         padding (double) : padding that needs to be put around the microwave (value added at each side).
     '''
-    if gate_object.t_pulse != 0 and gate_object.MW_power!=0:
-        segment.add_MW_pulse(gate_object.padding, gate_object.t_pulse + gate_object.padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
-        segment.reset_time()
-        segment.wait(gate_object.padding)
-    segment.add_global_phase(gate_object.permanent_phase_shift)
-
-    if 'reset' in kwargs:
-        if kwargs['reset'] == True:
-            segment.reset_time()
+    if isinstance(gate_object, gate_sequence_spec):
+        for gate in gate_object:
+            _load_single_qubit_gate(segment, gate, **kwargs)
     else:
-        segment.reset_time()
+        if gate_object.t_pulse != 0 and gate_object.MW_power!=0:
+            segment.add_MW_pulse(gate_object.padding, gate_object.t_pulse + gate_object.padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
+            segment.reset_time()
+            segment.wait(gate_object.padding)
+        segment.add_global_phase(gate_object.permanent_phase_shift)
+
+        if 'reset' in kwargs:
+            if kwargs['reset'] == True:
+                segment.reset_time()
+        else:
+            segment.reset_time()
 
 if __name__ == '__main__':
     from pulse_templates.utility.plotting import plot_seg
