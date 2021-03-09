@@ -38,14 +38,14 @@ def integrate_array(array):
     return integral
 
 
-def return_creation_fuction(angle, phase, J_max, delta_B, voltage_to_J_relation, f_res_to_J_relation):
+def return_creation_fuction(angle, phase, J_max, delta_B, J_to_voltage_relation, f_res_to_J_relation):
     '''
         Adds a custom pulse to this segment.
         Args:
             angle (double) : angle to evolve (rad)
             J_max (double) : max J value that can be hit (Hz)
             delta_B (double) : frequency difference between the qubits
-            voltage_to_J_relation (func) : function that converts J (Hz) to voltages (mV)
+            J_to_voltage_relation (func) : function that converts J (Hz) to voltages (mV)
             f_res_to_J_relation (func) : function that returns for a given J (Hz) value the frequency (Hz)
     '''
     duration, t_ramp, t_pulse, J_max = calculate_cphase_properties(angle*2, J_max, delta_B)
@@ -62,7 +62,7 @@ def return_creation_fuction(angle, phase, J_max, delta_B, voltage_to_J_relation,
         
         J_valued_data[dc_stop:n_points] = (0.5-0.5*np.cos((np.arange(n_points-dc_stop)+ offset/sample_rate*1e9)*np.pi/t_ramp+np.pi))*J_max
         
-        envelope = voltage_to_J_relation(J_valued_data)*amplitude
+        envelope = J_to_voltage_relation(J_valued_data)*amplitude
         frequencies = f_res_to_J_relation(J_valued_data)
 
         # format as a phase modulation to be phase coherent.
@@ -73,9 +73,93 @@ def return_creation_fuction(angle, phase, J_max, delta_B, voltage_to_J_relation,
 
     return iswap_function, duration
 
+def return_creation_fuction_iswap_cal(J_eff, J_drive,f_drive, J_to_voltage_relation):
+    '''
+        Adds a custom pulse to this segment.
+        Args:
+            J_eff (double) : max J value that can be hit (Hz)
+            J_drive (double) : the J speed used for driving
+            delta_B (double) : frequency difference between the qubits
+            J_to_voltage_relation (func) : function that converts J (Hz) to voltages (mV)
+    '''
+    if J_eff < J_drive:
+        raise ValueError('J dc needs to be always larger then J_ac (you cannot get a negative J) (at least if you don\'t use mediators ..)')
+    
+    duration, t_ramp, t_pulse, J_max = calculate_cphase_properties(1e3,  J_eff, f_drive)
+    t_pulse = 1/J_drive/2*1e9
+    duration = 2*t_ramp + t_pulse
+
+    def iswap_function(duration, sample_rate, amplitude):
+        n_points = int(round(duration / sample_rate * 1e9))
+        J_valued_data = np.zeros([n_points])
+        n_points_ramp = int(round(t_ramp / sample_rate * 1e9))
+
+        J_valued_data[0:n_points_ramp] = (0.5-0.5*np.cos(np.arange(n_points_ramp)*np.pi/t_ramp))*J_eff
+        dc_stop = int(round((t_ramp + t_pulse )/ sample_rate * 1e9))
+        J_valued_data[n_points_ramp:dc_stop] = J_eff + J_drive*np.sin(np.arange(dc_stop-n_points_ramp)*2*np.pi*f_drive/sample_rate)
+        offset = dc_stop - t_ramp - t_pulse
+        
+        J_valued_data[dc_stop:n_points] = (0.5-0.5*np.cos((np.arange(n_points-dc_stop)+ offset/sample_rate*1e9)*np.pi/t_ramp+np.pi))*J_eff
+        
+        envelope = J_to_voltage_relation(J_valued_data)*amplitude
+
+        return envelope
+
+    return iswap_function, duration
 
 
-def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, voltage_to_J_relation, f_res_to_J_relation, padding = 5):
+def iswap_cal(segment, gates, J_value, J_excitation, f_excitation, J_to_voltage_relation, padding = 5):
+    '''
+    Function to help with the calibration of iswap gates. A ramp is done to the target J, then a excitation with a desired amplitude is provided.
+    
+    Args:
+        segment (segment_container) : segment to which to add this stuff
+        gates (list<str>) : list of gates involved in the cphase gate (relations of J and f_res need to be provided for each gate)
+        J_value (double) : value of J to go for (Hz)
+        J_excitation (double) : value of J to excite with (Hz) (e.g. 500e3)
+        f_excitation (double) : frequency of the J excitation (Hz)
+        J_to_voltage_relation (list<func>) : function that returns the voltages to be applied for a certain amount of J (same order as the gates)
+        padding (int) : padding to be added in ns around this experiment
+    '''
+    if isinstance(J_value, loop_obj):
+        raise ValueError('J_value is a loop object, this is currently not supported for this function')
+    if isinstance(J_excitation, loop_obj):
+        raise ValueError('J_excitation is a loop object, this is currently not supported for this function')
+
+    t_gate = 0
+    amplitudes = tuple()
+    pulse_templates = tuple()
+
+    if isinstance(f_excitation, loop_obj):
+        t_gate = copy.copy(iswap_angle)
+        amplitudes = tuple()
+        pulse_templates = tuple()
+
+        for i in range(len(gates)):
+            functions = copy.copy(iswap_angle)
+            functions.data = np.empty(iswap_angle.data.shape, dtype=object)
+            for j in range(t_gate.data.size):
+                func, duration = return_creation_fuction(iswap_angle.data[j], phase, J_max, delta_B, J_to_voltage_relation[i], f_res_to_J_relation)
+                t_gate.data[j] = duration
+                functions.data[j] = func
+
+            pulse_templates += (functions, )
+            amplitudes += (1,)
+    else: 
+        for i in range(len(gates)):
+            func, duration = return_creation_fuction_iswap_cal(J_value, J_excitation, f_excitation, J_to_voltage_relation[i])
+            t_gate = duration
+            amplitudes += (1,)
+            pulse_templates += (func, )
+
+
+    add_block(segment, padding, gates, tuple([0]*len(gates)))
+    add_pulse_template(segment, t_gate, gates, amplitudes, pulse_templates)
+    add_block(segment, padding, gates, tuple([0]*len(gates)))
+
+
+
+def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, J_to_voltage_relation, f_res_to_J_relation, padding = 5):
     '''
     iSWAP gate for spins, this is basically a modulated verions of the cphase
     (convert to SWAP by running iSWAP and then CPHASE) -- this function does not guarantee that the accumalted ZZ phase is correct
@@ -86,7 +170,8 @@ def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, voltage_to_J_relat
         iswap_angle (double) : angle to rotate with the iSWAP gate
         phase (double) : starting phase of the iswap gate (important if you sqrt(iSWAP))
         J_max (double) : maximum amount of J that should be reached
-        voltage_to_J_relation (list<func>) : function that returns the voltages to be applied for a certain amount of J (same order as the gates)
+        delta_B (double) : frequency difference between the qubits
+        J_to_voltage_relation (list<func>) : function that returns the voltages to be applied for a certain amount of J (same order as the gates)
         f_res_to_J_relation (func) : function that returns the resonance frequency for J
         padding (int) : padding to add around the swap gate.
     '''
@@ -96,8 +181,8 @@ def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, voltage_to_J_relat
     if isinstance(delta_B, loop_obj):
         raise ValueError('delta_B is a loop object, this is currently not supported for this function')
     
-    if len(gates) != len(voltage_to_J_relation):
-        raise ValueError(f'found {len(gates)} gates and {len(len(voltage_to_J_relation))} voltage_to_J_relation\'s, something must be wrong here.')
+    if len(gates) != len(J_to_voltage_relation):
+        raise ValueError(f'found {len(gates)} gates and {len(len(J_to_voltage_relation))} J_to_voltage_relation\'s, something must be wrong here.')
 
     if isinstance(iswap_angle, loop_obj) and isinstance(phase, loop_obj):
         raise ValueError('No implementation yet to sweep iSWAP angle and phase.')
@@ -111,7 +196,7 @@ def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, voltage_to_J_relat
             functions = copy.copy(iswap_angle)
             functions.data = np.empty(iswap_angle.data.shape, dtype=object)
             for j in range(t_gate.data.size):
-                func, duration = return_creation_fuction(iswap_angle.data[j], phase, J_max, delta_B, voltage_to_J_relation[i], f_res_to_J_relation)
+                func, duration = return_creation_fuction(iswap_angle.data[j], phase, J_max, delta_B, J_to_voltage_relation[i], f_res_to_J_relation)
                 t_gate.data[j] = duration
                 functions.data[j] = func
 
@@ -126,7 +211,7 @@ def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, voltage_to_J_relat
             functions = copy.copy(phase)
             functions.data = np.empty(phase.data.shape, dtype=object)
             for j in range(phase.data.size):
-                func, duration = return_creation_fuction(iswap_angle, phase.data[j], J_max, delta_B, voltage_to_J_relation[i], f_res_to_J_relation)
+                func, duration = return_creation_fuction(iswap_angle, phase.data[j], J_max, delta_B, J_to_voltage_relation[i], f_res_to_J_relation)
                 t_gate = duration
                 functions.data[j] = func
 
@@ -139,7 +224,7 @@ def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, voltage_to_J_relat
         pulse_templates = tuple()
 
         for i in range(len(gates)):
-            func, duration = return_creation_fuction(iswap_angle, phase, J_max, delta_B, voltage_to_J_relation[i], f_res_to_J_relation)
+            func, duration = return_creation_fuction(iswap_angle, phase, J_max, delta_B, J_to_voltage_relation[i], f_res_to_J_relation)
             t_gate = duration
             amplitudes += (1,)
             pulse_templates += (func, )
@@ -174,12 +259,13 @@ if __name__ == '__main__':
         def f_res_relation(J):
             return f_res + J**2/5e6**2*delta_fres
         return f_res_relation
-    voltage_to_J_relation = (return_amp(-0.2), return_amp(1), return_amp(-0.23))
+    J_to_voltage_relation = (return_amp(-0.2), return_amp(1), return_amp(-0.23))
     
     sweep = linspace(0, 2*np.pi, 20, axis= 0)
 
-    iswap(seg, gates, np.pi, sweep, 5e6, 30e6, voltage_to_J_relation, f_res(30e6,30e6))
+    # iswap(seg, gates, np.pi, sweep, 5e6, 30e6, J_to_voltage_relation, f_res(30e6,30e6))
+    iswap_cal(seg, gates, 5e6, 0.5e6, 30e6, 30e6, J_to_voltage_relation)
     # plot_seg(seg, 0)   
     # plot_seg(seg, 5)   
-    plot_seg(seg, 10)   
+    plot_seg(seg, 0)   
     # plot_seg(seg, 15)   
