@@ -8,8 +8,7 @@ def phase_offset_charac(seg, gate_set_qubit_1, gate_to_test=None, axis = 0):
     '''
     gate_set_qubit_1.X.add(seg)
     if gate_to_test is not None:
-        print('fhksjdfshl;dfjk')
-        gate_to_test.add(seg, phase_corrections = {})   
+        gate_to_test.add(seg)   
 
     gate_set_qubit_1.Z(linspace(0,np.pi*4, 100, axis=axis, name='Phase shift', unit='rad')).add(seg)
     gate_set_qubit_1.X.add(seg)
@@ -23,13 +22,12 @@ if __name__ == '__main__':
     from pulse_lib.segments.utility.looping import linspace
     pulse = get_demo_lib('quad')
     seg = pulse.mk_segment()
-    xpi2 = single_qubit_gate_spec('qubit4_MW', 1e9, 100, 120, padding = 20)
-    xpi = single_qubit_gate_spec('qubit4_MW', 1e9, 200, 120, padding = 20)
-    ss_set = single_qubit_std_set()
-    ss_set.X = xpi2
-    ss_set.X2 = xpi
 
-    test_pulse = single_qubit_gate_spec('qubit2_MW', 1e9, 200, 120, padding = 20)
+    X90 = single_qubit_gate_spec('qubit4_MW', 1e9, 200, 120, padding = 20,)
+    ss_set = single_qubit_std_set()
+    ss_set.X = X90
+
+    test_pulse = single_qubit_gate_spec('qubit2_MW', 1e9, 200, 120, padding = 20,  phase_corrections= {'qubit4_MW' : 1*np.pi})
 
     phase_offset_charac(seg, ss_set, test_pulse, 0)
     plot_seg(seg)

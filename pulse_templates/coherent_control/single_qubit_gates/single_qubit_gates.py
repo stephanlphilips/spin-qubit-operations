@@ -41,19 +41,17 @@ class single_qubit_gate_spec:
             raise ValueError('no segment privided')
         if segment is None:
             segment = self._segment_generator.generate_segment()
-        
+
+        cpy = copy.copy(self)
         if len(kwargs) > 0:
-            cpy = copy.copy(self)
             for key, value in kwargs.items():
                 if key not in self.__dict__.keys():
                     raise ValueError(f'invalid keyword argument detected for single_qubit_gate_spec, {key}, options are {list(self.__dict__.keys())}')
                 setattr(cpy, key, value)
 
-            single_qubit_gate_simple(segment, cpy, reset=reset)
-        else:
-            single_qubit_gate_simple(segment, self, reset=reset)
+        single_qubit_gate_simple(segment, cpy, reset=reset)
 
-        for qubit_name, permanent_phase_shift in self.phase_corrections.items():
+        for qubit_name, permanent_phase_shift in cpy.phase_corrections.items():
             seg_qubit = getattr(segment, qubit_name)
             seg_qubit.add_global_phase(permanent_phase_shift) 
 
