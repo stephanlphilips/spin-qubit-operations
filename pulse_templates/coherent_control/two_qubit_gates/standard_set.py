@@ -107,8 +107,8 @@ class two_qubit_gate_descriptor:
 
 class two_qubit_std_set:
     cphase     = two_qubit_gate_descriptor()
-    CNOT12     = two_qubit_gate_descriptor('X_I', 'cphase', 'X_I')
-    CNOT21     = two_qubit_gate_descriptor('I_X', 'cphase', 'I_X')    
+    CNOT12     = two_qubit_gate_descriptor('X90_I', 'cphase', 'X90_I')
+    CNOT21     = two_qubit_gate_descriptor('I_X90', 'cphase', 'I_X90')    
     CROT12     = two_qubit_gate_descriptor()
     zCROT12     = two_qubit_gate_descriptor()
     CROT21     = two_qubit_gate_descriptor()
@@ -159,17 +159,20 @@ if __name__ == '__main__':
     two_qubit_gate_spec = two_qubit_std_set(qubit_1, qubit_2, ss)
     two_qubit_gate_spec.cphase = cphase12
 
-    # composite gate
-    two_qubit_gate_spec.CNOT12.add(v_exchange_pulse_on = (0,12,0))
+    qubit_1.X.add(seg)
+    two_qubit_gate_spec.cphase.add(seg)
+    qubit_1.X.add(seg)
+    # # composite gate
+    # two_qubit_gate_spec.CNOT12.add(v_exchange_pulse_on = (0,12,0))
 
-    wait(seg, gates, 250, base_level)
+    # wait(seg, gates, 250, base_level)
     
-    # single gate
-    two_qubit_gate_spec.cphase.add(t_gate=200, phase_corrections={'qubit1_MW': 0.25})
+    # # single gate
+    # two_qubit_gate_spec.cphase.add(t_gate=200, phase_corrections={'qubit1_MW': 0.25})
 
-    wait(seg, gates, 250, base_level)
+    # wait(seg, gates, 250, base_level)
     
-    # composite gate
-    two_qubit_gate_spec.SWAP.add()
+    # # composite gate
+    # two_qubit_gate_spec.SWAP.add()
 
     # plot_seg(ss.segments)

@@ -42,18 +42,20 @@ def return_pulse_lib():
 
     pulse.define_channel('I_MW','AWG5', 1)
     pulse.define_channel('Q_MW','AWG5', 2)
-    pulse.define_marker('M1','AWG5', 3)
-    pulse.define_channel('M2','AWG6', 2)
+    pulse.define_marker('M1','AWG5', 0)
+    pulse.define_marker('M2','AWG6', 0)
+    pulse.define_marker('M_SD1','AWG1', 0)
+    pulse.define_marker('M_SD2','AWG2', 0)
     pulse.define_channel('SCOPE1','AWG6', 2)
 
-    six_dot_hardware = hardware('test')
+    six_dot_hardware = hardware('test1')
     pulse.load_hardware(six_dot_hardware)
 
     IQ_chan_set_1 = IQ_channel_constructor(pulse)
     # set right association of the real channels with I/Q output.
     IQ_chan_set_1.add_IQ_chan("I_MW", "I")
     IQ_chan_set_1.add_IQ_chan("Q_MW", "Q")
-    IQ_chan_set_1.add_marker("M1", 30, 30)
+    IQ_chan_set_1.add_marker("M1")
     IQ_chan_set_1.set_LO(11.25e9)
     IQ_chan_set_1.add_virtual_IQ_channel('qubit1_MW', LO_freq=11.0)
     IQ_chan_set_1.add_virtual_IQ_channel('qubit2_MW', LO_freq=11.1)

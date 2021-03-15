@@ -93,7 +93,7 @@ def PSB_read_latched(segment, gates, t_ramp, t_read, p_0, p_1, p_2, disable_trig
     add_block(segment, t_read, gates, p_2)
 
 @template_wrapper
-def PSB_read_multi(segment, gates, t_ramp, t_read, p_0, p_1, nth_readout=0, disable_trigger=False):
+def PSB_read_multi(segment, gates, t_ramp, t_read, p_0, p_1, nth_readout=0,  unmute=None, disable_trigger=False):
     '''
     pulse able to perform a psb readout
 
@@ -108,7 +108,8 @@ def PSB_read_multi(segment, gates, t_ramp, t_read, p_0, p_1, nth_readout=0, disa
     '''
     # pulse towards the window and stay for the measurment time
     add_ramp(segment, t_ramp, gates, p_0, p_1)
-
+    if unmute is not None:
+        getattr(segment, unmute).add_marker(0, t_read)
     if disable_trigger == False:
         getattr(segment, gates[0]).add_HVI_marker("dig_trigger_{}".format(int(nth_readout)))
         getattr(segment, gates[0]).add_HVI_variable("t_measure", t_read)
