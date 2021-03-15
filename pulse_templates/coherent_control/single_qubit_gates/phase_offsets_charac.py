@@ -3,16 +3,15 @@ from pulse_lib.segments.utility.looping import loop_obj, linspace
 import numpy as np
 
 def phase_offset_charac(seg, gate_set_qubit_1, gate_to_test=None, axis = 0):
-    '''
-    detects for example start shifts on other qubits due due to a drive
-    '''
-    gate_set_qubit_1.X.add(seg)
-    if gate_to_test is not None:
-        print('fhksjdfshl;dfjk')
-        gate_to_test.add(seg, phase_corrections = {})   
+	'''
+	detects for example start shifts on other qubits due due to a drive
+	'''
+	gate_set_qubit_1.X.add(seg)
+	if gate_to_test is not None:
+		gate_to_test.add(seg, phase_corrections = {})	
 
-    gate_set_qubit_1.Z(linspace(0,np.pi*4, 100, axis=axis, name='Phase shift', unit='rad')).add(seg)
-    gate_set_qubit_1.X.add(seg)
+	gate_set_qubit_1.Z(linspace(0,np.pi*4, 100, axis=axis, name='Phase shift', unit='rad')).add(seg)
+	gate_set_qubit_1.X.add(seg)
 
 
 if __name__ == '__main__':
