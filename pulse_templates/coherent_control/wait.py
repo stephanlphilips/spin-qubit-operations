@@ -11,13 +11,16 @@ class wait_std_set():
         self.wait_time = value
         return copy.copy(self)
 
-    def add(self, segment=None):
+    def add(self, segment=None, **kwargs):
         if segment is None and self._segment_generator is None:
             raise ValueError('no segment privided')
         if segment is None:
             segment = self._segment_generator.generate_segment()
         
-        self.kwargs['t_wait']= self.wait_time
+        if len(kwargs) == 0:
+            self.kwargs['t_wait']= self.wait_time
+        else: 
+            self.kwargs['t_wait'] = kwargs['t_wait']
         wait(segment, **self.kwargs)
 
     def __copy__(self):

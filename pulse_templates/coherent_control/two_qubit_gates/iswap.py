@@ -49,7 +49,7 @@ def return_creation_fuction(angle, phase, J_max, delta_B, J_to_voltage_relation,
             J_to_voltage_relation (func) : function that converts J (Hz) to voltages (mV)
             f_res_to_J_relation (func) : function that returns for a given J (Hz) value the frequency (Hz)
     '''
-    duration, t_ramp, t_pulse, J_max = calculate_cphase_properties(angle*2, J_max, delta_B)
+    duration, t_ramp, t_pulse, J_max = calculate_cphase_properties(angle*4, J_max, delta_B)
 
     def iswap_function(duration, sample_rate, amplitude):
         sample_rate = sample_rate * 10
@@ -70,7 +70,7 @@ def return_creation_fuction(angle, phase, J_max, delta_B, J_to_voltage_relation,
         # format as a phase modulation to be phase coherent.
         PM = np.sin(integrate_array(frequencies*2*np.pi*1/sample_rate)+phase)/2+.5
 
-        return (envelope*PM)[::10]
+        return J_to_voltage_relation((J_valued_data*PM)[::10])*amplitude
 
 
     return iswap_function, duration
@@ -89,7 +89,7 @@ def return_creation_fuction_iswap_cal(J_eff, J_drive,f_drive, angle, J_to_voltag
         raise ValueError('J dc needs to be always larger then J_ac (you cannot get a negative J) (at least if you don\'t use mediators ..)')
     
     duration, t_ramp, t_pulse, J_max = calculate_cphase_properties(1e3,  J_eff, f_drive)
-    t_pulse = 1/J_drive*1e9*angle/np.pi/2
+    t_pulse = 4/J_drive*1e9*angle/np.pi/2 #since drive is with
     duration = 2*t_ramp + t_pulse
 
     def iswap_function(duration, sample_rate, amplitude):
@@ -99,7 +99,7 @@ def return_creation_fuction_iswap_cal(J_eff, J_drive,f_drive, angle, J_to_voltag
 
         J_valued_data[0:n_points_ramp] = (0.5-0.5*np.cos(np.arange(n_points_ramp)*np.pi/t_ramp))*J_eff
         dc_stop = int(round((t_ramp + t_pulse )/ sample_rate * 1e9))
-        J_valued_data[n_points_ramp:dc_stop] = J_eff + J_drive*np.sin(np.arange(dc_stop-n_points_ramp)*2*np.pi*f_drive/sample_rate)
+        J_valued_data[n_points_ramp:dc_stop] = J_eff - J_drive*(0.5+0.5*np.cos(np.arange(dc_stop-n_points_ramp)*2*np.pi*f_drive/sample_rate+np.pi))
         offset = dc_stop - t_ramp - t_pulse
         
         J_valued_data[dc_stop:n_points] = (0.5-0.5*np.cos(np.arange(n_points-dc_stop)/sample_rate*1e9*np.pi/t_ramp+np.pi))*J_eff
@@ -110,6 +110,25 @@ def return_creation_fuction_iswap_cal(J_eff, J_drive,f_drive, angle, J_to_voltag
 
     return iswap_function, duration
 
+
+def upsize(current, new_shape):
+    if not isinstance(current, loop_obj):
+        cache = np.empty(new_shape, dtype=type(current))
+        cache.fill(current)
+    else:
+        new_shape_ =  list(new_shape)
+        new_shape_.pop(*current.axis)
+
+        cache = np.tile(current.data, (*new_shape_, 1))
+        if current.axis == [0]:
+            cache = cache.T
+
+    return cache
+
+def to_loop_obj(oiginal, shape, loop_axis, l, u, s):
+    looper = loop_obj()
+    looper.add_data(upsize(oiginal, shape), axis = loop_axis[::-1],  labels = l, units = u, setvals = tuple(s))
+    return looper
 
 def iswap_cal(segment, gates, J_value, J_excitation, f_excitation, angle, J_to_voltage_relation, padding = 5):
     '''
@@ -124,44 +143,57 @@ def iswap_cal(segment, gates, J_value, J_excitation, f_excitation, angle, J_to_v
         J_to_voltage_relation (list<func>) : function that returns the voltages to be applied for a certain amount of J (same order as the gates)
         padding (int) : padding to be added in ns around this experiment
     '''
-    if isinstance(J_value, loop_obj):
-        raise ValueError('J_value is a loop object, this is currently not supported for this function')
-    if isinstance(J_excitation, loop_obj):
-        raise ValueError('J_excitation is a loop object, this is currently not supported for this function')
-
     t_gate = 0
     amplitudes = tuple()
     pulse_templates = tuple()
 
-    if isinstance(f_excitation, loop_obj):
-        t_gate = copy.copy(f_excitation)
+    loop_dim = np.zeros(10, dtype=np.int)
+    units = dict()
+    labels = dict()
+    setvals = dict()
+
+    for i in [J_value, J_excitation, f_excitation, angle, J_to_voltage_relation]:
+        if isinstance(i, loop_obj):
+            if -1 in i.axis:
+                raise ValueError(f'The sweep axis must be set for this template.')
+            loop_dim[i.axis] = i.shape
+            for j in i.axis:
+                units[j] = i.units[0] #this housld be more deterministic
+                labels[j] = i.labels[0]
+                setvals[j] = i.setvals[0]
+
+    if any(loop_dim != 0):
+        loop_axis = np.where(loop_dim != 0)[0]
+        shape = loop_dim[loop_axis]
+        
+        u, l, s =  [], [], []
+        for i in sorted(units.keys()):
+            u.append(units[i])
+            l.append(labels[i])
+            s.append(setvals[i])
+
+        J_value = to_loop_obj(J_value, shape, loop_axis, l , u , s)
+        J_excitation = to_loop_obj(J_excitation, shape, loop_axis, l , u , s)
+        f_excitation = to_loop_obj(f_excitation, shape, loop_axis, l , u , s)
+        angle = to_loop_obj(angle, shape, loop_axis, l , u , s)
+
+
+
         amplitudes = tuple()
         pulse_templates = tuple()
 
         for i in range(len(gates)):
-            functions = copy.copy(f_excitation)
+            t_gate = to_loop_obj(0, shape, loop_axis, l , u , s)
+            functions = to_loop_obj(object(), shape, loop_axis, l , u , s)
+
             functions.data = np.empty(f_excitation.data.shape, dtype=object)
+
             for j in range(t_gate.data.size):
-                func, duration = return_creation_fuction_iswap_cal(J_value, J_excitation, f_excitation.data[j], angle, J_to_voltage_relation[i])
+                idx = np.unravel_index(j, t_gate.data.shape)
+                func, duration = return_creation_fuction_iswap_cal(J_value.data[idx], J_excitation.data[idx], f_excitation.data[idx], angle.data[idx], J_to_voltage_relation[i])
 
-                t_gate.data[j] = duration
-                functions.data[j] = func
-
-            pulse_templates += (functions, )
-            amplitudes += (1,)
-    if isinstance(angle, loop_obj):
-        t_gate = copy.copy(angle)
-        amplitudes = tuple()
-        pulse_templates = tuple()
-
-        for i in range(len(gates)):
-            functions = copy.copy(angle)
-            functions.data = np.empty(angle.data.shape, dtype=object)
-            for j in range(t_gate.data.size):
-                func, duration = return_creation_fuction_iswap_cal(J_value, J_excitation, f_excitation, angle.data[j], J_to_voltage_relation[i])
-
-                t_gate.data[j] = duration
-                functions.data[j] = func
+                t_gate.data[idx] = duration
+                functions.data[idx] = func
 
             pulse_templates += (functions, )
             amplitudes += (1,)
@@ -176,8 +208,6 @@ def iswap_cal(segment, gates, J_value, J_excitation, f_excitation, angle, J_to_v
     add_block(segment, padding, gates, tuple([0]*len(gates)))
     add_pulse_template(segment, t_gate, gates, amplitudes, pulse_templates)
     add_block(segment, padding, gates, tuple([0]*len(gates)))
-
-
 
 def iswap(segment, gates, iswap_angle, phase, J_max, delta_B, J_to_voltage_relation, f_res_to_J_relation, padding = 5):
     '''
@@ -264,10 +294,14 @@ if __name__ == '__main__':
     pulse = get_demo_lib('six')
     seg = pulse.mk_segment()
 
+    from core_tools.data.SQL.connect import set_up_local_storage
+        
+    set_up_local_storage("xld_user", "XLDspin001", "vandersypen_data", "6dot", "XLD", "6D2S - SQ21-XX-X-XX-X")
+
     gates = ('vP1','vB1', 'vP2')
     base_level = (0,0,0)
     # seg.vP4 += 10
-    wait(seg, gates, 100, base_level)
+    # wait(seg, gates, 100, base_level)
     # iswap_basic(seg, gates, 'vB1' ,(0,4,0), (0,8,0), 2, 1e8, 100, 10)
 
     def return_amp(amp):
@@ -281,13 +315,20 @@ if __name__ == '__main__':
         return f_res_relation
     J_to_voltage_relation = (return_amp(-0.2), return_amp(1), return_amp(-0.23))
     
-    sweep = linspace(0, 2*np.pi, 20, axis= 0)
+    sweep = linspace(0, 2*np.pi, 20, axis= 1)
 
-    import good_morning.static.J23 as J23
+    import good_morning.static.J45 as J45
 
-    iswap(seg, J23.gates, np.pi, 0, 5e6, 50e6, J23.gen_J_to_voltage(), J23.return_delta_B_J_relation())
-    # iswap_cal(seg, gates, 5e6, 0.5e6, 30e6, 30e6, J_to_voltage_relation)
+    iswap(seg, J45.gates, np.pi, 0, 6e6, 80e6, J45.gen_J_to_voltage(), J45.return_delta_B_J_relation())
+    # iswap_cal(seg, gates, 5e6, 5e6, linspace(75e6, 85e6, 80, 'freq', 'Hz', 0), np.pi, J_to_voltage_relation, 20)
+    # print(gates, J45.gates)
+    # print(J_to_voltage_relation, J45.gen_J_to_voltage())
+    # ratios =  J45.gen_J_to_voltage()
+    # iswap_cal(seg, J45.gates, 5e6, 5e6, 80e6, 3.14, ratios, 20)
+
+    # iswap_cal(seg, J45.gates, 5e6, 5e6, 80e6, linspace(3.14, 2.65, 80, 'freq', 'Hz', 0), ratios, 20)
+
     # plot_seg(seg, 0)   
     # plot_seg(seg, 5)   
-    plot_seg(seg, 0)   
+    plot_seg(seg, 0)
     # plot_seg(seg, 15)   

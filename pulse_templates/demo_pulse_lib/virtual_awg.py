@@ -2,11 +2,11 @@ from pulse_templates.demo_pulse_lib.quad_dot import return_pulse_lib_quad_dot
 
 from pulse_templates.demo_pulse_lib.six_dot import return_pulse_lib
 
-def get_demo_lib(sample):
+def get_demo_lib(sample, hardware = None):
 	if sample == 'quad' :
 		return return_pulse_lib_quad_dot()
 	if sample == 'six' :
-		return return_pulse_lib()
+		return return_pulse_lib(hardware)
 	else:
 		raise ValueError('sample not defined. Please add or use a existing one (e.g. quad)')
 

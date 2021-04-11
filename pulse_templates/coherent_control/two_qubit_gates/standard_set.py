@@ -114,7 +114,7 @@ class two_qubit_std_set:
     CROT21     = two_qubit_gate_descriptor()
     zCROT21     = two_qubit_gate_descriptor()    
     SWAP       = two_qubit_gate_descriptor('CNOT21', 'CNOT12', 'CNOT21')
-    iSWAP      = two_qubit_gate_descriptor('CNOT21', 'CNOT12', 'CNOT21', 'cphase')
+    iSWAP      = two_qubit_gate_descriptor('cphase', 'CNOT21', 'CNOT12', 'CNOT21')
     sqrt_swap  = two_qubit_gate_descriptor()
     sqrt_iswap = two_qubit_gate_descriptor()
 

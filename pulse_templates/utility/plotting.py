@@ -42,10 +42,11 @@ def plot_seg(segments, idx=0, multi_dim=False):
 
             sample_rate = 1e9
             data_y[ch_name].append(pulse_data_curr_seg.render(sample_rate))
-            offset = 0
-            if len(data_x[ch_name]) != 0:
-                offset = data_x[ch_name][-1][-1] 
-            data_x[ch_name].append(np.linspace(0, pulse_data_curr_seg.total_time, len(data_y[ch_name][-1]))+offset)
+            # offset = 0
+            # if len(data_x[ch_name]) != 0:
+            #     print(ch_name)
+            #     offset = data_x[ch_name][-1][-1] 
+            data_x[ch_name].append(np.linspace(0, pulse_data_curr_seg.total_time, len(data_y[ch_name][-1])))
 
     data_x_concatenated = dict()
     data_y_concatenated = dict()

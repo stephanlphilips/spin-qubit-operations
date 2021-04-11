@@ -2,16 +2,16 @@
 from pulse_lib.segments.utility.looping import loop_obj, linspace
 import numpy as np
 
-def phase_offset_charac(seg, gate_set_qubit_1, gate_to_test=None, axis = 0):
+def phase_offset_charac(seg, gate_set_qubit_1, gate_to_test=None, npoints = 100, axis = 0):
 	'''
 	detects for example start shifts on other qubits due due to a drive
 	'''
-	gate_set_qubit_1.X.add(seg)
+	gate_set_qubit_1.X.add(seg, phase_corrections = {})
 	if gate_to_test is not None:
 		gate_to_test.add(seg, phase_corrections = {})	
 
-	gate_set_qubit_1.Z(linspace(0,np.pi*4, 100, axis=axis, name='Phase shift', unit='rad')).add(seg)
-	gate_set_qubit_1.X.add(seg)
+	gate_set_qubit_1.Z(linspace(0,np.pi*4, npoints, axis=axis, name='Phase shift', unit='rad')).add(seg)
+	gate_set_qubit_1.X.add(seg, phase_corrections = {})
 
 
 if __name__ == '__main__':
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
     from pulse_templates.utility.plotting import plot_seg
     from pulse_lib.segments.utility.looping import linspace
-    pulse = get_demo_lib('quad')
+    pulse = get_demo_lib('six')
     seg = pulse.mk_segment()
 
     X90 = single_qubit_gate_spec('qubit4_MW', 1e9, 200, 120, padding = 20,)

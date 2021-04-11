@@ -5,7 +5,7 @@ from pulse_lib.virtual_channel_constructors import IQ_channel_constructor, virtu
 import numpy as np
 
 
-class hardware(hw.harware_parent):
+class hardware_test(hw.harware_parent):
 
     def __init__(self, name):
         super().__init__(name, "_settings_quad_dot_")
@@ -13,7 +13,7 @@ class hardware(hw.harware_parent):
         virtual_gate_set_1 =  hw.virtual_gate('general',["B0", "P1", "B1", "P2", "B2", "P3", "B3", "P4", "B4", "P5", "B5", "P6", "B6", "S1", "S6", "SD1_P", "SD2_P"  ])
         self.virtual_gates.append(virtual_gate_set_1)
 
-def return_pulse_lib():
+def return_pulse_lib(hardware=None):
     """
     return pulse library object
 
@@ -48,8 +48,10 @@ def return_pulse_lib():
     pulse.define_marker('M_SD2','AWG2', 0)
     pulse.define_channel('SCOPE1','AWG6', 2)
 
-    six_dot_hardware = hardware('test1')
-    pulse.load_hardware(six_dot_hardware)
+    if hardware is None:
+        hardware = hardware_test('test1')
+
+    pulse.load_hardware(hardware)
 
     IQ_chan_set_1 = IQ_channel_constructor(pulse)
     # set right association of the real channels with I/Q output.
@@ -65,8 +67,6 @@ def return_pulse_lib():
     IQ_chan_set_1.add_virtual_IQ_channel('qubit6_MW', LO_freq=11.5)
     IQ_chan_set_1.add_virtual_IQ_channel('pre_pulse', LO_freq=11.5)
 
-    # just to make qcodes happy
-    six_dot_hardware.close()
     
     return pulse
 
