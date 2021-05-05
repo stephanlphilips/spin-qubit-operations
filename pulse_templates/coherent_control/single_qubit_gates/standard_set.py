@@ -14,16 +14,15 @@ class gate_descriptor:
         self.amp = amp
         self.add_phase = add_phase
         self.add_glob_phase = add_glob_phase
-    
+
     def __set_name__(self, owner, name):
         self.name = name
         self.private_name = '_' + name
 
     def __set__(self, owner, gate_specification):
         if isinstance(gate_specification, single_qubit_gate_spec):
-            setattr(gate_specification, '_segment_generator', getattr(owner, 'segment_generator'))
             setattr(owner, self.private_name, gate_specification)
-        else: 
+        else:
             raise ValueError('please assign the correct type to the gate (single_qubit_gate_spec type), current type is {}'.format(str(type(gate_specification))))
 
     def __get__(self, owner, objtype=None):
@@ -48,7 +47,7 @@ class single_qubit_std_set():
     '''
     Make a set to generate all the clifford for the single qubit RB.
 
-    Type for the gates : 
+    Type for the gates :
         pulse_templates.coherent_control.single_qubit_gates.single_qubit_gate_spec
 
     Minimal gates to define
@@ -150,14 +149,14 @@ class single_qubit_std_set():
     def wait(self, segment, t_wait):
         '''
         wait t ns and then reset the time for the current channel
-        
+
         Args:
             segment (segment) : segment to which to add
-            time (double) : time to wait 
+            time (double) : time to wait
         '''
-        getattr(segment, self.qubit).wait(t_wait) 
+        getattr(segment, self.qubit).wait(t_wait)
         getattr(segment, self.qubit).reset_time()
-    
+
     @property
     def qubit(self):
         return self.X.qubit_name
@@ -171,11 +170,11 @@ if __name__ == '__main__':
 
     pulse = get_demo_lib('six')
     seg = pulse.mk_segment()
-    
+
     test = single_qubit_std_set()
     test.X = single_qubit_gate_spec('qubit1_MW', 1e9, 100, MW_power=500, padding = 10)
     # test.wait(seg, 100)
-    # create custom Z with custom phase -- 
+    # create custom Z with custom phase --
     # test.Z(3.14).add(seg, f_qubit=1.12e9)
     # print(test.Z)
     # a = test.Z

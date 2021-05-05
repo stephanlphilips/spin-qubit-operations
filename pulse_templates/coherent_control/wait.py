@@ -2,8 +2,7 @@ from pulse_templates.oper.operators import wait
 import copy
 
 class wait_std_set():
-    def __init__(self, segment_mgr, **kwargs):
-        self._segment_generator = segment_mgr
+    def __init__(self, **kwargs):
         self.wait_time = 100
         self.kwargs = kwargs
 
@@ -11,20 +10,15 @@ class wait_std_set():
         self.wait_time = value
         return copy.copy(self)
 
-    def add(self, segment=None, **kwargs):
-        if segment is None and self._segment_generator is None:
-            raise ValueError('no segment privided')
-        if segment is None:
-            segment = self._segment_generator.generate_segment()
-        
+    def build(self, segment, reset=True, **kwargs):
         if len(kwargs) == 0:
             self.kwargs['t_wait']= self.wait_time
-        else: 
+        else:
             self.kwargs['t_wait'] = kwargs['t_wait']
         wait(segment, **self.kwargs)
 
     def __copy__(self):
-        cpy = wait_std_set(self._segment_generator, **self.kwargs)
+        cpy = wait_std_set(**self.kwargs)
         cpy.wait_time = self.wait_time
         return cpy
 

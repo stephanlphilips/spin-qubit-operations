@@ -1,14 +1,14 @@
-from pulse_templates.utility.template_wrapper import template_wrapper 
-from pulse_templates.utility.oper import add_block, add_ramp
+from pulse_lib.segments.utility.template_base import pulse_template
+#from pulse_templates.utility.template_wrapper import template_wrapper
 
 from pulse_lib.segments.utility.looping import loop_obj
 from dataclasses import dataclass, field
 from typing import Union
 import copy
-
+import logging
 
 @dataclass
-class single_qubit_gate_spec:
+class single_qubit_gate_spec(pulse_template):
     '''
     Args:
         qubit_name : name of the virtual qubit channel
@@ -22,38 +22,42 @@ class single_qubit_gate_spec:
     f_qubit : Union[float, loop_obj]
     t_pulse : Union[float, loop_obj]
     MW_power : Union[float, loop_obj]
-    phase : Union[float, loop_obj] = 0 
+    phase : Union[float, loop_obj] = 0
     permanent_phase_shift : Union[float, loop_obj] = 0
-    padding : Union[float, int] = 1 #left right padding around the MW pulse in ns
+    padding : Union[float, int] = 5 #left right padding around the MW pulse in ns
     AM_mod : any = None
     PM_mod : any = None
     phase_corrections : dict = field(default_factory=dict)
-    _segment_generator : any = None
+    gate_name : str = ''
 
-    def add(self, segment=None, reset=True, **kwargs):
+    def replace(self, **kwargs):
+        cpy = copy.copy(self)
+        for key, value in kwargs.items():
+            if key not in self.__dict__.keys():
+                raise ValueError(f'invalid keyword argument detected for single_qubit_gate_spec, {key}, options are {list(self.__dict__.keys())}')
+            setattr(cpy, key, value)
+        return cpy
+
+    def build(self, segment, reset=True, **kwargs):
         '''
         adds itselves to a segment
 
         Args:
             segment (segment_container) : segement where to add the gate to.
         '''
-        if segment is None and self._segment_generator is None:
-            raise ValueError('no segment privided')
-        if segment is None:
-            segment = self._segment_generator.generate_segment()
-
-        cpy = copy.copy(self)
+        spec = self
         if len(kwargs) > 0:
-            for key, value in kwargs.items():
-                if key not in self.__dict__.keys():
-                    raise ValueError(f'invalid keyword argument detected for single_qubit_gate_spec, {key}, options are {list(self.__dict__.keys())}')
-                setattr(cpy, key, value)
+            spec = self.replace(**kwargs)
 
-        single_qubit_gate_simple(segment, cpy, reset=reset)
+        ### NOTE: phase shift is applied before executing gate. !!!
+        for qubit_name, permanent_phase_shift in spec.phase_corrections.items():
+            logging.debug(f'{qubit_name}: phase {permanent_phase_shift}')
+            seg_qubit = segment[qubit_name]
+            seg_qubit.add_phase_shift(0, permanent_phase_shift)
 
-        for qubit_name, permanent_phase_shift in cpy.phase_corrections.items():
-            seg_qubit = getattr(segment, qubit_name)
-            seg_qubit.add_global_phase(permanent_phase_shift) 
+        logging.debug(f'{self.qubit_name}: {self.gate_name} {self.t_pulse} ns {self.MW_power}')
+        single_qubit_gate_simple(segment, spec, reset=reset)
+
 
     def __call__(self, angle):
         '''
@@ -70,14 +74,6 @@ class single_qubit_gate_spec:
         cpy.phase += angle
         return cpy
 
-    def copy(self):
-        copy = single_qubit_gate_spec(self.qubit_name, copy.deepcopy(f_qubit), copy.deepcopy(t_pulse), copy.deepcopy(MW_power), 
-            copy.deepcopy(phase) ,copy.deepcopy(permanent_phase_shift) ,copy.deepcopy(padding))
-        copy.AM_mod = self.AM_mod
-        copy.PM_mod = self.PM_mod
-        copy._segment_generator = self._segment_generator
-
-        return copy
 
 class gate_sequence_spec:
     '''
@@ -111,16 +107,16 @@ class gate_sequence_spec:
     def permanent_phase_shift(self):
         return self._permanent_phase_shift
 
-    @phase.setter
+    @permanent_phase_shift.setter
     def permanent_phase_shift(self, value):
         for gate in self.gates:
             gate.permanent_phase_shift += value
         self._permanent_phase_shift += value
 
 
-    def add(self, segment=None, reset=True, **kwargs):
+    def build(self, segment, reset=True, **kwargs):
         for gate in self.gates:
-            gate.add(segment, reset, **kwargs)
+            gate.build(segment, reset, **kwargs)
 
     def copy(self):
         copy_set = []
@@ -150,6 +146,7 @@ class gate_sequence_spec:
             return self.gates[self.__nth_iter-1]
         else:
           raise StopIteration
+
 
 # @template_wrapper
 def single_qubit_gate_simple(segment, gate_object,**kwargs):
@@ -183,10 +180,16 @@ def _load_single_qubit_gate(segment, gate_object,**kwargs):
             _load_single_qubit_gate(segment, gate, **kwargs)
     else:
         if gate_object.t_pulse != 0 and gate_object.MW_power!=0:
-            segment.add_MW_pulse(gate_object.padding, gate_object.t_pulse + gate_object.padding, gate_object.MW_power, gate_object.f_qubit, gate_object.phase ,  gate_object.AM_mod,  gate_object.PM_mod)
+            segment.add_MW_pulse(gate_object.padding,
+                                 gate_object.t_pulse + gate_object.padding,
+                                 gate_object.MW_power,
+                                 gate_object.f_qubit,
+                                 gate_object.phase ,
+                                 gate_object.AM_mod,
+                                 gate_object.PM_mod)
             segment.reset_time()
             segment.wait(gate_object.padding)
-        segment.add_global_phase(gate_object.permanent_phase_shift)
+        segment.add_phase_shift(0, gate_object.permanent_phase_shift)
 
         if 'reset' in kwargs:
             if kwargs['reset'] == True:
@@ -194,13 +197,15 @@ def _load_single_qubit_gate(segment, gate_object,**kwargs):
         else:
             segment.reset_time()
 
+
 if __name__ == '__main__':
-    from pulse_templates.utility.plotting import plot_seg
     from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
     from pulse_lib.segments.utility.looping import linspace
-    from pulse_templates.oper.operators import wait
+    from pulse_lib.sequence_builder import sequence_builder
+    import matplotlib.pyplot as pt
+
     pulse = get_demo_lib('six')
-    seg = pulse.mk_segment()
+    seq = sequence_builder(pulse)
 
     gates = ('vP4',)
     base_level = (0,)
@@ -210,17 +215,24 @@ if __name__ == '__main__':
     amp = 10
     freq = 200e8
     padding = 10
-    Q4_Pi2 = single_qubit_gate_spec(qubit, freq, t_drive, amp, AM_mod='flattop', phase_corrections={'qubit2_MW' : 0.23})
+    Q4_Pi2 = single_qubit_gate_spec(qubit, freq, t_drive, amp, AM_mod='flattop',
+                                    phase_corrections={'qubit2_MW' : 0.23})
 
     # # T2* measurement
-    single_qubit_gate_simple(seg, Q4_Pi2, reset=False)
+    seq.add(Q4_Pi2, reset=False)
 
-    wait(seg, gates, linspace(10,100), base_level)
+    seq.wait(gates, linspace(100, 1000, 10), base_level)
     # shorthand syntax
-    Q4_Pi2.add(seg, reset=True)
-    wait(seg, gates, 80, base_level)
+    seq.add(Q4_Pi2, reset=True)
+    seq.wait(gates, 80, base_level)
     # shorthand syntax
-    Q4_Pi2.add(seg, reset=True, MW_power = 200)
-    wait(seg, gates, 80, base_level)
-    Q4_Pi2.add(seg, reset=True)
-    plot_seg(seg)
+    seq.add(Q4_Pi2, MW_power = 200)
+    seq.wait(gates, 80, base_level)
+    seq.add(Q4_Pi2, reset=True)
+
+    # nasty short-cut
+    seg = seq._segment
+    for i in [0,9]:
+        pt.figure()
+        seg.plot([i], ['Q_MW', 'I_MW', 'M1'])
+

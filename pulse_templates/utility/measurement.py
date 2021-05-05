@@ -25,7 +25,7 @@ class setpoint_mgnt:
 			s.setpoint_names += self.setpoint_names[0]+'_'+suffix
 			s.setpoint_labels += self.setpoint_labels[0]+'_'+suffix
 			s.setpoint_units += self.setpoint_units[0]
-		
+
 		return s
 
 	def __add__(self, other):
@@ -42,7 +42,7 @@ class setpoint_mgnt:
 		return added
 
 @dataclass
-class measurement:
+class measurement_OLD:
 	name : str
 	chan   : tuple
 	threshold : float   = None
@@ -51,7 +51,7 @@ class measurement:
 	flip : tuple		= None
 	_0_on_high : bool   = True
 	__nth_readout : int = 0
-	
+
 	def __post_init__(self):
 		if self.threshold is None and self.accept != -1:
 			raise ValueError('Cannot accept data without threshold.')
@@ -60,7 +60,7 @@ class measurement:
 			raise ValueError('Cannot threshold without phase correcting data (put 0 to select I channel).')
 		if len(self.chan) != 2:
 			raise ValueError(f'Please provice the I and Q channel, now provided {self.chan}')
-	
+
 	def set_nth_read(self, n):
 		self.__nth_readout = n
 
@@ -73,11 +73,11 @@ class measurement:
 		data_I = data_I.reshape([int(data_I.size/n_readouts), n_readouts])[:, self.__nth_readout]
 		data_Q = np.asarray(raw[self.chan[1]-1])
 		data_Q = data_Q.reshape([int(data_Q.size/n_readouts), n_readouts])[:, self.__nth_readout]
-		
+
 		if self.phase is not None:
 			data_complex = (data_I + 1j*data_Q)*np.exp(1j*self.phase)
 			return (data_complex.real, )
-		
+
 		return (data_I, data_Q)
 
 	def get_selection(self, raw, n_readouts):
@@ -91,7 +91,7 @@ class measurement:
 			selection = np.where(raw_measurement < self.threshold)[0]
 		else:
 			selection = np.where(raw_measurement > self.threshold)[0]
-		
+
 		out[selection] = 0
 
 		return (out, len(selection))
@@ -113,7 +113,7 @@ class measurement:
 			meas_points = np.bitwise_xor(meas_points, np.invert(qubit_outcomes[flipper]))
 		if len(indexes) == 0:
 			return (meas_points, 0 ,)
-		
+
 		return (meas_points, len(np.where(meas_points == True)[0])/len(indexes) ,)
 
 	def get_setpoints_raw(self, n_rep):
@@ -149,7 +149,7 @@ class measurement:
 
 		return s
 
-class measurement_manager():
+class measurement_manager_OLD():
 	def __init__(self):
 		self.measurements = []
 		self.n_rep = 500
@@ -159,7 +159,7 @@ class measurement_manager():
 	@property
 	def t_meas(self):
 		return self._t_meas
-	
+
 	@t_meas.setter
 	def t_meas(self, t_meas):
 		if self._t_meas	is None:
@@ -168,7 +168,7 @@ class measurement_manager():
 			pass
 		else:
 			raise ValueError(f'Trying to assing readout time {t_meas} that is different from the previous one ({self.t_meas} ns).\nThis is not supported in the current version of HVI.')
-	
+
 	def add(self, *measurements):
 		'''
 		Add measurement for the current trigger.
@@ -200,14 +200,14 @@ class measurement_manager():
 				meas_outcomes.append(meas)
 
 		return meas_outcomes
-	
+
 	def format_data(self, data):
 		# check if input shape is as expected
 		# if data[0].shape != (self.n_rep, 4):
 		# 	raise ValueError(f'number of readout ({data.shape}) not the same of the expected({(self.n_rep, self.n_readouts)})?')
 
 		state_selectors = self.state_selectors
-		meas_outcomes   = self.measurement_outcomes 
+		meas_outcomes   = self.measurement_outcomes
 
 		data_out = []
 		# 1) pull out raw data
@@ -219,7 +219,7 @@ class measurement_manager():
 		for sel in state_selectors:
 			raw_selection, n_selected = sel.get_selection(data, self.n_readouts)
 			data_out += [n_selected]
-			
+
 			if sel.accept == 0:
 				selector = np.bitwise_and(np.invert(raw_selection), selector)
 			else:
@@ -244,7 +244,7 @@ class measurement_manager():
 		s = setpoint_mgnt()
 
 		state_selectors = self.state_selectors
-		meas_outcomes   = self.measurement_outcomes 
+		meas_outcomes   = self.measurement_outcomes
 
 		for selector in state_selectors:
 			s += selector.get_setpoints_raw(self.n_rep)

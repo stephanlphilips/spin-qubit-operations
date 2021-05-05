@@ -1,4 +1,4 @@
-from pulse_templates.utility.template_wrapper import template_wrapper 
+from pulse_templates.utility.template_wrapper import template_wrapper
 from pulse_templates.utility.oper import add_block, add_ramp, add_pulse_template
 
 from pulse_lib.segments.utility.looping import loop_obj
@@ -68,9 +68,9 @@ def return_creation_fuction(angle, J_max, delta_B, voltage_to_J_relation):
         dc_stop = int(round((t_ramp + t_pulse )/ sample_rate * 1e9))
         J_valued_data[n_points_ramp:dc_stop] = J_max
         offset = dc_stop - t_ramp - t_pulse
-        
+
         J_valued_data[dc_stop:n_points] = (0.5-0.5*np.cos((np.arange(n_points-dc_stop)+ offset/sample_rate*1e9)*np.pi/t_ramp+np.pi))*J_max
-        
+
         return voltage_to_J_relation(J_valued_data)*amplitude
 
     return cphase_function, duration
@@ -87,16 +87,16 @@ def cphase(segment, gates, cphase_angle, J_max, delta_B, voltage_to_J_relation, 
         delta_B (double) : frequency difference between the qubits (MHz).
         voltage_to_J_relation (list<func>) : function that returns the voltages to be applied for a certain amount of J
         padding (int) : amount of padding to add around the pulse (in ns)
-    ''' 
+    '''
     if isinstance(J_max, loop_obj):
         raise ValueError('J_max is a loop object, this is currently not supported for this function')
 
     if isinstance(delta_B, loop_obj):
         raise ValueError('delta_B is a loop object, this is currently not supported for this function')
-    
+
     if len(gates) != len(voltage_to_J_relation):
         raise ValueError(f'found {len(gates)} gates and {len(len(voltage_to_J_relation))} voltage_to_J_relation\'s, something must be wrong here.')
-    
+
     if isinstance(cphase_angle, loop_obj):
         t_gate = copy.copy(cphase_angle)
         t_gate.data = np.zeros(cphase_angle.data.shape)
@@ -149,13 +149,13 @@ if __name__ == '__main__':
 
     v_exchange_pulse_off =  (0,0,0)
     v_exchange_pulse_on  = (0,50,0)
-    
+
     def return_amp(amp):
         def J_pulse(x):
             return np.sqrt(x)/np.sqrt(5e6)*amp
         return J_pulse
 
-    import good_morning.static.J12 as J12
+#    import good_morning.static.J12 as J12
 
     # func, time = return_creation_fuction(np.pi-0.7, 5e6, 30e6, voltage_to_J_relation=J_pulse)
     # points = func(time, 1e9, 1)

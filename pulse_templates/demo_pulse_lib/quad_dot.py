@@ -8,7 +8,7 @@ import numpy as np
 class hardware(hw.harware_parent):
 
     def __init__(self, name):
-        super().__init__(name, "_settings_quad_dot")
+        super().__init__(name, "_settings_quad_dot_")
 
         virtual_gate_set_1 =  hw.virtual_gate('general',["B0", "P1", "B1", "P2", "B2", "P3", "B3", "P4", "B4", "S1", "S2", "SD1_P", "SD2_P"  ])
         self.virtual_gates.append(virtual_gate_set_1)
@@ -37,7 +37,10 @@ def return_pulse_lib_quad_dot():
 
     pulse.define_channel('I_MW','AWG4', 1)
     pulse.define_channel('Q_MW','AWG4', 2)
-    pulse.define_marker('M1','AWG4', 3)
+    pulse.define_marker('M1','AWG4', 3, setup_ns=60, hold_ns=60)
+
+    pulse.define_digitizer_channel('SD1_I', 'Dig1', 1)
+    pulse.define_digitizer_channel('SD1_Q', 'Dig1', 2)
 
     quad_hardware = hardware('test')
     pulse.load_hardware(quad_hardware)
@@ -46,7 +49,7 @@ def return_pulse_lib_quad_dot():
     # set right association of the real channels with I/Q output.
     IQ_chan_set_1.add_IQ_chan("I_MW", "I")
     IQ_chan_set_1.add_IQ_chan("Q_MW", "Q")
-    IQ_chan_set_1.add_marker("M1", -60, 60)
+    IQ_chan_set_1.add_marker("M1")
     IQ_chan_set_1.set_LO(1e8)
     IQ_chan_set_1.add_virtual_IQ_channel('qubit1_MW')
     IQ_chan_set_1.add_virtual_IQ_channel('qubit2_MW')
@@ -55,7 +58,7 @@ def return_pulse_lib_quad_dot():
 
     # just to make qcodes happy
     quad_hardware.close()
-    
+
     return pulse
 
 

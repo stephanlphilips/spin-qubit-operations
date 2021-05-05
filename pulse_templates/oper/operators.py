@@ -7,7 +7,7 @@ Pulses
 	* wait : wait for a certain time at a point.
 
 '''
-from pulse_templates.utility.template_wrapper import template_wrapper 
+from pulse_templates.utility.template_wrapper import template_wrapper
 from pulse_templates.utility.oper import add_block, add_ramp
 
 @template_wrapper
@@ -40,7 +40,7 @@ def jump(segment, gates, t_ramp, p_0, p_1, reset_time=True, **kwargs):
 
 
 @template_wrapper
-def wait(segment, gates, t_wait, p_0, reset_time=True,**kwargs):
+def wait(segment, gates, t_wait, p_0, reset_time=True, **kwargs):
     '''
     wait at p_0 for t_wait
 
@@ -85,18 +85,18 @@ def ramp_through_anticorssing(gates_to_jump, jump, center_position, gates):
 if __name__ == '__main__':
     from pulse_templates.utility.plotting import plot_seg
     from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
-    
+
     pulse = get_demo_lib('quad')
     seg = pulse.mk_segment()
 
     gates = ('vP1', 'vP2')
-    
+
     p_0 = (0, 0)
     p_1 = (5, 0)
     seg.P1  += 1
-    seg.vP1 += 5 
+    seg.vP1 += 5
 
     jump(seg, gates, 1000, p_0, p_1)
     wait(seg, gates, 2000, p_1)
-    
+
     plot_seg(seg)
