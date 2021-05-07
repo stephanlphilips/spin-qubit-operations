@@ -108,7 +108,11 @@ class two_qubit_gate_descriptor:
 class two_qubit_std_set:
     cphase     = two_qubit_gate_descriptor()
     CNOT12     = two_qubit_gate_descriptor('X90_I', 'cphase', 'X90_I')
-    CNOT21     = two_qubit_gate_descriptor('I_X90', 'cphase', 'I_X90')    
+    CNOT21     = two_qubit_gate_descriptor('I_X90', 'cphase', 'I_X90')
+    CROT_12    = two_qubit_gate_descriptor()
+    CROT_12_z  = two_qubit_gate_descriptor()
+    CROT_21    = two_qubit_gate_descriptor()
+    CROT_21_z  = two_qubit_gate_descriptor()
     CROT12     = two_qubit_gate_descriptor()
     zCROT12     = two_qubit_gate_descriptor()
     CROT21     = two_qubit_gate_descriptor()
