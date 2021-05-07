@@ -135,7 +135,12 @@ class two_qubit_std_set:
     def __init__(self, q1, q2):
         self._q1 = q1
         self._q2 = q2
+    
+    def __getitem__(self, name):
+        return getattr(self, name)
 
+    def __setitem__(self, name, value):
+        setattr(self, name, value)
 
 if __name__ == '__main__':
     from pulse_lib.sequence_builder import sequence_builder
