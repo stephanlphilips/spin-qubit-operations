@@ -44,6 +44,9 @@ def calculate_cphase_properties(angle, J_max, delta_B):
         t_ramp = t_ramp_(J_max, delta_B)*1e9
         t_pulse = (angle-angle_ramp*2)/J_max/2/np.pi*1e9
 
+    t_pulse = round(t_pulse)
+    t_ramp  = round(t_ramp)
+    
     duration = t_ramp*2 + t_pulse
 
     return duration, t_ramp, t_pulse, J_max
@@ -144,8 +147,8 @@ if __name__ == '__main__':
 
     gates = ('vB1', )
     J = np.pi
-    J_max = 5e6
-    delta_B = 30e6
+    J_max = 10e6
+    delta_B = 64e6
 
     v_exchange_pulse_off =  (0,0,0)
     v_exchange_pulse_on  = (0,50,0)
@@ -155,18 +158,18 @@ if __name__ == '__main__':
             return np.sqrt(x)/np.sqrt(5e6)*amp
         return J_pulse
 
-#    import good_morning.static.J12 as J12
+    import good_morning.static.J23 as J23
 
     # func, time = return_creation_fuction(np.pi-0.7, 5e6, 30e6, voltage_to_J_relation=J_pulse)
     # points = func(time, 1e9, 1)
     # plt.plot(points)
-    gate_phases = linspace(0, np.pi*2, 20, axis=0)
-    cphase(seg, gates, gate_phases, J_max, delta_B, (return_amp(0.2),), padding=30)
+    gate_phases = 4.04 #linspace(3.9, 4.1, 20, axis=0)
+    cphase(seg, J23.gates, gate_phases, J_max, delta_B, J23.gen_J_to_voltage(), padding=30)
 
     # cphase(seg, gates, gate_phases, J_max, delta_B, (return_amp(0.2), return_amp(1), return_amp(0.23)), padding=30)
 
     # cphase_basic(seg, gates, v_exchange_pulse_off, v_exchange_pulse_on, gate_phases*100, t_ramp=50)
-    plot_seg(seg, 0)
-    plot_seg(seg, 5)
-    plot_seg(seg, 10)
+    for i in range(20):
+        plot_seg(seg, i)
+
     plt.show()
