@@ -42,8 +42,6 @@ class measurement_expression(pulse_template):
         # TODO @@@ kwargs
         segment.add_measurement_expression(self.expression, accept_if=self.accept, name=self.name)
 
-
-
 class MeasurementSet:
     def __init__(self):
         self.measurements = {}

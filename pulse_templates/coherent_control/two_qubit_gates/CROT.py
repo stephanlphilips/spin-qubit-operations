@@ -19,11 +19,8 @@ def CROT_basic(segment, gates, v_exchange_pulse_off, v_exchange_pulse_on, gate_s
     add_ramp(segment, t_ramp, gates, v_exchange_pulse_off, v_exchange_pulse_on)
     
     add_block(segment, padding, gates, v_exchange_pulse_on)
-    for gate, level in zip(gates, v_exchange_pulse_on):
-        getattr(segment, gate).add_block(0, gate_spec.t_pulse + gate_spec.padding*2, level)
-
-    gate_spec.add(segment, reset=False)
-    segment.reset_time()
+    add_block(segment, gate_spec.t_pulse, gates, v_exchange_pulse_on, reset_time=False)
+    gate_spec.build(segment)
     add_block(segment, padding, gates, v_exchange_pulse_on)
 
     add_ramp(segment, t_ramp, gates, v_exchange_pulse_on, v_exchange_pulse_off)
@@ -80,7 +77,7 @@ def CROT(segment, gates, gate_spec, J_target, delta_B, voltage_to_J_relation, pa
 
     for gate, level in zip(gates, amp_J_target):
         getattr(segment, gate).add_block(0, gate_spec.t_pulse + gate_spec.padding*2, level)
-    gate_spec.add(segment, reset=False)
+    gate_spec.build(segment, reset=False)
     segment.reset_time()
 
     add_pulse_template(segment, t_gate, gates, amplitudes, pulse_templates_down)

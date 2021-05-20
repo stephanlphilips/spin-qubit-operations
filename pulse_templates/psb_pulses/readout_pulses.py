@@ -92,7 +92,7 @@ def PSB_read_latched(segment, gates, t_ramp, meas, p_0, p_1, p_2, disable_trigge
     add_block(segment, t_read, gates, p_2)
 
 #@template_wrapper
-def PSB_read_multi(segment, gates, t_ramp, meas, p_0, p_1, nth_readout=0,  unmute=None, disable_trigger=False):
+def PSB_read_multi(segment, gates, t_ramp, meas, p_0, p_1,  unmute=None, disable_trigger=False):
     '''
     pulse able to perform a psb readout
 
@@ -113,8 +113,6 @@ def PSB_read_multi(segment, gates, t_ramp, meas, p_0, p_1, nth_readout=0,  unmut
 
     if disable_trigger == False:
         meas.build(segment, reset=False)
-    if disable_trigger == False:
-        measurement.build(segment, reset=False)
 
     add_block(segment, t_read, gates, p_1)
     add_ramp(segment, t_ramp, gates, p_1, p_0)

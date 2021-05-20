@@ -1,5 +1,5 @@
 from pulse_lib.segments.utility.template_base import pulse_template
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import inspect
 import copy
 import logging
@@ -21,7 +21,7 @@ class two_qubit_gate_generic(pulse_template):
     '''
     shaping_function : any
     pulse_kwargs : dict
-    phase_corrections : dict
+    phase_corrections : dict  = field(default_factory=dict)
 
     def replace(self, **kwargs):
         cpy = copy.copy(self)
@@ -95,7 +95,7 @@ class two_qubit_gate_descriptor:
 
     def __set__(self, obj, gate_specification):
         if isinstance(gate_specification, two_qubit_gate_generic):
-            setattr(obj, self.private_name, gate_specification)
+            obj[self.private_name] =  gate_specification
         else:
             raise ValueError('bad two qubit gate descriptor provided, please use the two_qubit_gate_generic class')
 
@@ -110,12 +110,12 @@ class two_qubit_gate_descriptor:
             for gate in self.reference_gates:
                 gate_comp = gate.split('_')
                 if len(gate_comp) == 1:
-                    gates_to_do += getattr(obj, gate)
+                    gates_to_do += obj[gate]
                 else: # single_qubit gate
-                    qubit_1 = getattr(obj, '_q1')
-                    qubit_2 = getattr(obj, '_q2')
-                    gates_to_do += getattr(qubit_1, gate_comp[0])
-                    gates_to_do += getattr(qubit_2, gate_comp[1])
+                    qubit_1 = obj['_q1']
+                    qubit_2 = obj['_q2']
+                    gates_to_do += qubit_1[gate_comp[0]]
+                    gates_to_do += qubit_2[gate_comp[1]]
             return gates_to_do
 
 

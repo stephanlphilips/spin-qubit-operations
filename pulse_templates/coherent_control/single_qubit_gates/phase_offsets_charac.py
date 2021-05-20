@@ -6,17 +6,17 @@ def phase_offset_charac(seg, gate_set_qubit_1, gate_to_test=None, npoints = 100,
     '''
     detects for example start shifts on other qubits due due to a drive
     '''
-    gate_set_qubit_1.X.add(seg, phase_corrections = {})
+    gate_set_qubit_1.X.build(seg, phase_corrections = {})
     
     if gate_to_test is not None:
         if isinstance(gate_to_test, list):
             for gate in gate_to_test:
-                gate.add(seg, phase_corrections = {})
+                gate.build(seg, phase_corrections = {})
         else:
-            gate_to_test.add(seg, phase_corrections = {})   
+            gate_to_test.build(seg, phase_corrections = {})   
 
-    gate_set_qubit_1.Z(linspace(0,np.pi*4, npoints, axis=axis, name='Phase shift', unit='rad')).add(seg)
-    gate_set_qubit_1.X.add(seg, phase_corrections = {})
+    gate_set_qubit_1.Z(linspace(0,np.pi*4, npoints, axis=axis, name='Phase shift', unit='rad')).build(seg)
+    gate_set_qubit_1.X.build(seg, phase_corrections = {})
 
 
 if __name__ == '__main__':

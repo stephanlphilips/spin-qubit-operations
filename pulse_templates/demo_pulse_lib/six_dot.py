@@ -1,19 +1,11 @@
-import core_tools.drivers.harware as hw
+from core_tools.drivers.hardware.hardware import hardware
 from pulse_lib.base_pulse import pulselib
 from pulse_lib.virtual_channel_constructors import IQ_channel_constructor, virtual_gates_constructor
 
 import numpy as np
 
 
-class hardware_test(hw.harware_parent):
-
-    def __init__(self, name):
-        super().__init__(name, "_settings_quad_dot_")
-
-        virtual_gate_set_1 =  hw.virtual_gate('general',["B0", "P1", "B1", "P2", "B2", "P3", "B3", "P4", "B4", "P5", "B5", "P6", "B6", "S1", "S6", "SD1_P", "SD2_P"  ])
-        self.virtual_gates.append(virtual_gate_set_1)
-
-def return_pulse_lib(hardware=None):
+def return_pulse_lib(hw=None):
     """
     return pulse library object
 
@@ -48,10 +40,15 @@ def return_pulse_lib(hardware=None):
     pulse.define_marker('M_SD2','AWG2', 0)
     pulse.define_channel('SCOPE1','AWG6', 2)
 
-    if hardware is None:
-        hardware = hardware_test('test1')
+    pulse.define_digitizer_channel_iq('SD1_IQ', 'Dig1', [1, 2])
+    pulse.define_digitizer_channel_iq('SD2_IQ', 'Dig1', [3, 4])
 
-    pulse.load_hardware(hardware)
+
+    if hw is None:
+        hw = hardware()
+        hw.virtual_gates.add('general',["B0", "P1", "B1", "P2", "B2", "P3", "B3", "P4", "B4", "P5", "B5", "P6", "B6", "S1", "S6", "SD1_P", "SD2_P"  ])
+
+    pulse.load_hardware(hw)
 
     IQ_chan_set_1 = IQ_channel_constructor(pulse)
     # set right association of the real channels with I/Q output.
@@ -73,5 +70,7 @@ def return_pulse_lib(hardware=None):
 
 
 if __name__ == '__main__':
+    from core_tools.data.SQL.connect import set_up_local_storage
+    set_up_local_storage("xld_user", "XLDspin001", "vandersypen_data", "6dot", "XLD", "6D2S - SQ21-XX-X-XX-X")
+
     pulse = return_pulse_lib()
-    print(pulse.channels)

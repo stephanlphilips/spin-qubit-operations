@@ -397,7 +397,7 @@ def plot(seq, job, awgs):
 #    uploader = seq.uploader
     print(f'sequence: {seq.shape}')
     print(f'job index:{job.index}, sequences:{len(job.sequence)}')
-    print(f'  sample_rate:{job.default_sample_rate} playback_time:{job.playback_time}')
+    print(f'sample_rate:{job.default_sample_rate} playback_time:{job.playback_time}')
 
     fig = pt.figure()
     fig.clear()

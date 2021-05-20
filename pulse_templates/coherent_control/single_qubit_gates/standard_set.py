@@ -96,6 +96,12 @@ class single_qubit_std_set():
     def __init__(self, segment_generator=None):
         self.segment_generator = segment_generator
 
+    def __getitem__(self, name):
+        return getattr(self, name)
+
+    def __setitem__(self, name, value):
+        setattr(self, name, value)
+
     def load_std_gate(self, segment, gate_name):
         '''
         load a standard gate defined in this object
@@ -183,7 +189,8 @@ if __name__ == '__main__':
     # print(test.Z(0))
     # test.Z(0).add(seg)
     # # test.Y2.add(seg)
-    test.X180.add(seg)
+    print(test['I'])
+
 
     print('start second gate')
     # print(test.X)
