@@ -8,6 +8,8 @@ import copy
 
 import matplotlib.pyplot as plt
 
+# from pulse_lib.segments.utility.loops_to_numpy import loop_to_numpy
+
 @template_wrapper
 def iswap_basic(segment, gates, barrier_gate,v_exchange_pulse_off, v_exchange_pulse_on, v_ac, f_ac, t_gate, t_ramp, padding = 2):
     '''

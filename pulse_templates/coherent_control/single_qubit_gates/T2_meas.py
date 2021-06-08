@@ -13,10 +13,10 @@ def T2_ramsey(seg, gate_set, t_wait, f_bg_oscillations):
         t_wait (double) : time to wait
         f_bg_oscillations (double) : freq at which the the qubit needs to oscilate 
     '''
-    gate_set.X.add(seg)
+    gate_set.X.build(seg)
     gate_set.wait(seg, t_wait)
-    gate_set.Z(t_wait*1e-9*f_bg_oscillations*np.pi*2).add(seg)
-    gate_set.X.add(seg)
+    gate_set.Z(t_wait*1e-9*f_bg_oscillations*np.pi*2).build(seg)
+    gate_set.X.build(seg)
 
 def T2_CPMG_t_tot(seg, gate_set, t_wait, N_rep,f_bg_oscillations):
     '''

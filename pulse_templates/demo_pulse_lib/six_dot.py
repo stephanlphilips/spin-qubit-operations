@@ -28,7 +28,7 @@ def return_pulse_lib(hw=None):
     pulse.define_channel('B5','AWG3', 3)
     pulse.define_channel('P6','AWG3', 4)
     # pulse.define_channel('B6','AWG4', 1)
-    pulse.define_channel('S6','AWG4', 2)
+    pulse.define_channel('S2','AWG4', 2)
     pulse.define_channel('SD1_P','AWG4', 3)
     pulse.define_channel('SD2_P','AWG4', 4)
 
@@ -46,7 +46,7 @@ def return_pulse_lib(hw=None):
 
     if hw is None:
         hw = hardware()
-        hw.virtual_gates.add('general',["B0", "P1", "B1", "P2", "B2", "P3", "B3", "P4", "B4", "P5", "B5", "P6", "B6", "S1", "S6", "SD1_P", "SD2_P"  ])
+        hw.virtual_gates.add('general',["B0", "P1", "B1", "P2", "B2", "P3", "B3", "P4", "B4", "P5", "B5", "P6", "B6", "S1", "S2", "SD1_P", "SD2_P"  ])
 
     pulse.load_hardware(hw)
 
