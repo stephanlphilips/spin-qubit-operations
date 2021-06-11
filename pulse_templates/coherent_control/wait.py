@@ -3,23 +3,23 @@ import copy
 
 class wait_std_set():
     def __init__(self, **kwargs):
-        self.wait_time = 100
+        self.t_pulse = 100
         self.kwargs = kwargs
 
     def __call__(self, value):
-        self.wait_time = value
+        self.t_pulse = value
         return copy.copy(self)
 
     def build(self, segment, reset=True, **kwargs):
         if len(kwargs) == 0:
-            self.kwargs['t_wait']= self.wait_time
+            self.kwargs['t_wait']= self.t_pulse
         else:
             self.kwargs['t_wait'] = kwargs['t_wait']
         wait(segment, **self.kwargs)
 
     def __copy__(self):
         cpy = wait_std_set(**self.kwargs)
-        cpy.wait_time = self.wait_time
+        cpy.t_pulse = self.t_pulse
         return cpy
 
 if __name__ == '__main__':
