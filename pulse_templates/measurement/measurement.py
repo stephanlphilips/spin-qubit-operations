@@ -24,7 +24,6 @@ class measurement(pulse_template):
         return cpy
 
     def build(self, segment, **kwargs):
-        # TODO @@@ kwargs
         segment[self.channel].acquire(
                 0, self.t_measure, ref=self.mref, accept_if=self.accept,
                 threshold=self.threshold, zero_on_high=self.zero_on_high)

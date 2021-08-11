@@ -2,7 +2,9 @@ from pulse_lib.segments.utility.looping import loop_obj, linspace
 import numpy as np
 
 def get_allXY_specs(repeat):
-    allXY_set = repeat * [['I', 'I'], ['X2', 'X2'], ['Y2', 'Y2'], ['X2', 'Y2'], ['Y2', 'X2'], ['X', 'I'], ['Y', 'I'], ['X', 'Y'], ['X', 'Y'], ['X', 'Y2'], ['Y', 'X2'], ['X2', 'Y'], ['Y2', 'X'], ['X', 'X2'], ['X2', 'X'], ['Y', 'Y2'], ['Y2', 'Y'], ['X2', 'I'], ['Y2', 'I'], ['X', 'X'], ['Y', 'Y']]
+    allXY_set = repeat * [['I', 'I'], ['X2', 'X2'], ['Y2', 'Y2'], ['X2', 'Y2'], ['Y2', 'X2'],
+                            ['X', 'I'], ['Y', 'I'], ['X', 'Y'], ['X', 'Y'], ['X', 'Y2'], ['Y', 'X2'], ['X2', 'Y'], ['Y2', 'X'], ['X', 'X2'], ['X2', 'X'], ['Y', 'Y2'],
+                            ['Y2', 'Y'], ['X2', 'I'], ['Y2', 'I'], ['X', 'X'], ['Y', 'Y']]
     setpoint = loop_obj()
     
     setpoint.add_data(np.linspace(1,len(allXY_set), len(allXY_set)), axis=0, labels = 'ALL XY gate id', units='#')

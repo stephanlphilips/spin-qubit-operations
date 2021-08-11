@@ -55,7 +55,7 @@ class single_qubit_std_set():
         * the reset will be derived from the others
     '''
     # NMR notation
-    I = gate_descriptor('X', amp = 0)
+    I = gate_descriptor('X', amp = 1e-9) #give it some amp to induce a wait.
     X = gate_descriptor()
     Y = gate_descriptor('X', add_phase=np.pi/2)
     Z = gate_descriptor('X', amp = 0, add_glob_phase=np.pi/2)
@@ -133,7 +133,6 @@ class single_qubit_std_set():
             matrix (np.matrix) : matrix corresponding to the gate has been added
         '''
         clifford = self.qubit_set[clifford_number]
-
         seq = clifford.elementary_gates_XY if mode=='XY' else clifford.elementary_gates_XZ
         for gate in seq:
             _load_single_qubit_gate(segment, getattr(self, gate))
@@ -151,6 +150,7 @@ class single_qubit_std_set():
         '''
         clifford_number = self.qubit_set.get_inverting_gate(matrix)
         self.load_clifford_gate(segment, clifford_number, mode)
+        return clifford_number
 
     def wait(self, segment, t_wait):
         '''
@@ -173,12 +173,16 @@ if __name__ == '__main__':
 
     from pulse_templates.coherent_control.single_qubit_gates.single_qubit_gates import single_qubit_gate_spec
 
+    from core_tools.data.SQL.connect import set_up_local_storage
 
+    set_up_local_storage('stephan', 'magicc', 'test', "project_name", "set_up_name", "sample_name")
+    
     pulse = get_demo_lib('six')
     seg = pulse.mk_segment()
 
     test = single_qubit_std_set()
     test.X = single_qubit_gate_spec('qubit1_MW', 1e9, 100, MW_power=500, padding = 10)
+    print(test.qubit) 
     # test.wait(seg, 100)
     # create custom Z with custom phase --
     # test.Z(3.14).add(seg, f_qubit=1.12e9)

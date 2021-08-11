@@ -36,6 +36,23 @@ def add_block(segment, t_gate, gates, levels, reset_time=True):
     if reset_time == True:
         segment.reset_time()
 
+def add_block_ss(segment, t_gate_start, t_gates_stop, gates, levels, reset_time=True):
+    '''
+    add a block to muliple segments at the same time and reset the time.
+
+    Args:
+        segment (segment_container) : segment to which to add this stuff
+        t_gate (double) : time of the block pulse
+        gates (tuple<str>) : names of the gates to which to add the block
+        levels (tuple <double>) : levels of the block pulse
+    '''
+    for gate, level in zip(gates, levels):
+        getattr(segment, gate).add_block(t_gate_start, t_gates_stop, level)
+
+    if reset_time == True:
+        segment.reset_time()
+
+
 def add_ramp(segment, t_gate, gates, level_in, level_out, reset_time=True):
     '''
     add a block to muliple segments at the same time and reset the time.

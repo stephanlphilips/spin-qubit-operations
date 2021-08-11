@@ -33,14 +33,15 @@ def generate_state_tomography(segment, *qubits, repeat = 1,axis=0):
     setpoint.add_data(np.linspace(1,len(m_operators), len(m_operators)), axis=axis, labels = 'State Tomography projection', units='#')
 
     for i in range(len(qubits)):
-        getattr(segment, qubits[i].qubit).update_dim(setpoint)
+        segment[qubits[i].qubit].update_dim(setpoint)
 
-    # todo generalize
     for i in range(setpoint.data.size):
         gates = m_operators[i].split('_')
 
         for j in range(len(qubits)):
-            qubits[j].load_std_gate(getattr(segment, qubits[j].qubit)[i], gates[j])
+            if gates[j] != 'I':
+                qubits[j].load_std_gate(segment[i], gates[j])
+                
 
 if __name__ == '__main__':
     from pulse_templates.coherent_control.single_qubit_gates.standard_set import single_qubit_std_set
@@ -50,23 +51,27 @@ if __name__ == '__main__':
     from pulse_lib.segments.utility.looping import linspace
 
     import matplotlib.pyplot as plt
+    from core_tools.data.SQL.connect import set_up_local_storage
 
+    set_up_local_storage('stephan', 'magicc', 'test', "project_name", "set_up_name", "sample_name")
+    
     pulse = get_demo_lib('six')
     seg = pulse.mk_segment()
 
     ss_set4 = single_qubit_std_set()
-    ss_set4.X =  single_qubit_gate_spec('qubit4_MW', 1e9, 100, 120)
+    ss_set4.X =  single_qubit_gate_spec('qubit4_MW', 1e8, 100, 120)
 
     ss_set3 = single_qubit_std_set()
-    ss_set3.X =  single_qubit_gate_spec('qubit3_MW', 1e9, 100, 120)
+    ss_set3.X =  single_qubit_gate_spec('qubit3_MW', 3e8, 30, 240)
     # ss_set.X2 = single_qubit_gate_spec('qubit4_MW', 1e9, 200, 120)
     print('executing test')
     print(generate_measurement_operators(2))
     # ss_set.X.add(seg)
     generate_state_tomography(seg, ss_set3, ss_set4, axis=0)
     
-    print('test done')
+    # print('test done')
     
-    plot_seg(seg, 1)
+    for i in range(9):
+        plot_seg(seg, i)
 
-    plt.show()
+    # plt.show()

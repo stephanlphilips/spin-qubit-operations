@@ -112,10 +112,13 @@ class two_qubit_gate_descriptor:
                 if len(gate_comp) == 1:
                     gates_to_do += obj[gate]
                 else: # single_qubit gate
-                    qubit_1 = obj['_q1']
-                    qubit_2 = obj['_q2']
-                    gates_to_do += qubit_1[gate_comp[0]]
-                    gates_to_do += qubit_2[gate_comp[1]]
+                    if gate_comp[0] != 'I': #skip the identity operation
+                        qubit_1 = obj['_q1']
+                        gates_to_do += qubit_1[gate_comp[0]]
+                    if gate_comp[1] != 'I': #skip the identity operation
+                        qubit_2 = obj['_q2']
+                        gates_to_do += qubit_2[gate_comp[1]]
+
             return gates_to_do
 
 

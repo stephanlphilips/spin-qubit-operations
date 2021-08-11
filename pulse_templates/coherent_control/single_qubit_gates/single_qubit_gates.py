@@ -187,8 +187,10 @@ def _load_single_qubit_gate(segment, gate_object,**kwargs):
                                  gate_object.phase ,
                                  gate_object.AM_mod,
                                  gate_object.PM_mod)
+
             segment.reset_time()
             segment.wait(gate_object.padding)
+        
         segment.add_phase_shift(0, gate_object.permanent_phase_shift)
 
         if 'reset' in kwargs:

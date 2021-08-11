@@ -3,7 +3,7 @@ from pulse_templates.coherent_control.RB_generic.RB_mgr import RB_mgr
 from pulse_lib.segments.utility.looping import linspace
 import numpy as np
 
-def generature_single_qubit_RB(segment, gate_set, n_gates, n_rand, RB_type='XZ', interleave=None, seed=None):
+def generature_single_qubit_RB(segment, gate_set, n_gates, n_rand, RB_type='XY', interleave=None, seed=None):
     '''
     generate a RB sequence for a single qubit.
 
@@ -32,6 +32,9 @@ def generature_single_qubit_RB(segment, gate_set, n_gates, n_rand, RB_type='XZ',
         for m in range(n_gates.data.size):
             rands = RB_mgmt.add_cliffords(getattr(segment, gate_set.qubit)[n,m], int(n_gates.data[m]))
             cl_n[n][m] = rands
+
+            data = (getattr(segment, gate_set.qubit)[n,m].data[0].MW_pulse_data)
+
     
     return rands
 
@@ -43,11 +46,14 @@ if __name__ == '__main__':
 
     pulse = get_demo_lib('quad')
     seg = pulse.mk_segment()
-    xpi2 = single_qubit_gate_spec('qubit4_MW', 1e9, 100, 120)
+    xpi2 = single_qubit_gate_spec('qubit4_MW', 1e9, 100, 180)
     xpi = single_qubit_gate_spec('qubit4_MW', 1e9, 200, 120)
     ss_set = single_qubit_std_set()
     ss_set.X = xpi2
-    ss_set.X2 = xpi
+    # ss_set.X2 = xpi
+    # ss_set.X180 = xpi
 
     IQ_channel = getattr(seg, ss_set.qubit)
-    generature_single_qubit_RB(seg, ss_set, linspace(5,50,10), 10)
+    generature_single_qubit_RB(seg, ss_set, linspace(2,3,2), 2)
+
+    plot_seg(seg)

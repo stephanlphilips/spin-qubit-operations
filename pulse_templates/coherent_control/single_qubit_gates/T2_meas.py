@@ -32,15 +32,15 @@ def T2_CPMG_t_tot(seg, gate_set, t_wait, N_rep,f_bg_oscillations):
     TODO : problems is T_wait and N are loop objects? PULSE lib add support for multipying two param.
     '''
     
-    gate_set.X.add(seg)
+    gate_set.X.build(seg)
 
     for i in range(N_rep):
         gate_set.wait(seg, t_wait/N_rep/2)
-        gate_set.X2.add(seg)
+        gate_set.X2.build(seg)
         gate_set.wait(seg, t_wait/N_rep/2)
 
-    gate_set.Z(t_wait*1e-9*f_bg_oscillations*np.pi*2).add(seg)
-    gate_set.X.add(seg)
+    gate_set.Z(t_wait*1e-9*f_bg_oscillations*np.pi*2).build(seg)
+    gate_set.X.build(seg)
 
 def T2_CPMG_t_single(seg, gate_set, t_wait, N_rep, f_bg_oscillations):
     '''
@@ -57,7 +57,7 @@ def T2_CPMG_t_single(seg, gate_set, t_wait, N_rep, f_bg_oscillations):
     '''
     T2_CPMG_t_tot(seg, gate_set, t_wait*N_rep, N_rep, f_bg_oscillations)
 
-def T2_hahn(seg, gate_set, t_wait, f_bg_oscillations):
+def T2_hahn(seg, gate_set, t_wait):
     '''
     perform hahn echo
 
@@ -67,7 +67,13 @@ def T2_hahn(seg, gate_set, t_wait, f_bg_oscillations):
         t_wait (double) : time to wait
         f_bg_oscillations (double) : freq at which the the qubit needs to oscilate 
     '''
-    T2_CPMG_t_tot(seg, gate_set, t_wait, 1, f_bg_oscillations)
+    # T2_CPMG_t_tot(seg, gate_set, t_wait, 1, f_bg_oscillations)
+    
+    gate_set.X.build(seg)
+    gate_set.wait(seg, t_wait/2)
+    gate_set.X2.build(seg)
+    gate_set.wait(seg, t_wait/2)    
+    gate_set.X.build(seg)
 
 if __name__ == '__main__':
     

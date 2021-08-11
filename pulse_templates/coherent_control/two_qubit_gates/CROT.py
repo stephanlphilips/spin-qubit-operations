@@ -1,6 +1,6 @@
 from pulse_templates.utility.template_wrapper import template_wrapper 
-from pulse_templates.utility.oper import add_block, add_ramp, add_pulse_template
-from pulse_lib.segments.utility.looping import loop_obj
+from pulse_templates.utility.oper import add_block, add_ramp, add_pulse_template, add_block_ss
+from pulse_lib.segments.utility.looping import loop_obj, linspace
 import numpy as np
 
 # @template_wrapper
@@ -24,6 +24,35 @@ def CROT_basic(segment, gates, v_exchange_pulse_off, v_exchange_pulse_on, gate_s
     add_block(segment, padding, gates, v_exchange_pulse_on)
 
     add_ramp(segment, t_ramp, gates, v_exchange_pulse_on, v_exchange_pulse_off)
+
+def gate_alignment_tests(segment, gates, pulse_voltages,  gate_spec, padding = 2):
+    '''
+    basic cphase, with a linear ramp
+
+    Args:
+        segment (segment_container) : segment to which to add this stuff
+        gates (tuple<str>) : gates to be pulses for this gate.
+        barrier_gate (str) : barrier to pulse (for the ac)
+        v_exchange_pulse (double) : voltage to pulse to
+        t_gate (double) : total time of the gate not inclusing the ramps
+        t_ramp (double) : ramp time
+    '''
+
+
+    add_block(segment, 500, gates, (0,)*len(gates), reset_time=True)
+    add_block_ss(segment, linspace(250,550,100, axis=0, name='time', unit='ns'), linspace(350,650,100, axis=0, name='time', unit='ns'), gates, pulse_voltages, reset_time=False)
+
+    gate_spec = gate_spec.gates[0]
+    seg = getattr(segment, gate_spec.qubit_name)
+    seg.add_MW_pulse(400, 500,
+                                 gate_spec.MW_power,
+                                 gate_spec.f_qubit,
+                                 gate_spec.phase ,
+                                 gate_spec.AM_mod,
+                                 gate_spec.PM_mod)
+    segment.reset_time()
+    add_block(segment, 500, gates, (0,)*len(gates), reset_time=True)
+
 
 def t_ramp_(J_max, delta_B):
     return 3/np.sqrt(J_max**2 + delta_B**2)

@@ -36,3 +36,27 @@ class ReadoutTemplate(pulse_template):
             else:
                 kwargs_func[key] = value
         self.measurement_func(segment, meas=self.measurement, **kwargs_func)
+
+
+class FunctionTemplate(pulse_template):
+    def __init__(self, func, **func_kwargs):
+        self.func = func
+        self.func_kwargs = func_kwargs
+
+    def replace(self, **kwargs):
+        cpy = copy.copy(self)
+        meas = cpy.measurement
+        kwargs_func = cpy.func_kwargs.copy()
+        for key, value in kwargs.items():
+            if hasattr(meas, key):
+                meas = meas.replace(**{key:value})
+            else:
+                kwargs_func[key] = value
+        cpy.measurement = meas
+        cpy.func_kwargs = kwargs_func
+        return cpy
+
+    def build(self, segment, reset=False, **kwargs):
+
+        kwargs_func = self.func_kwargs.copy()
+        self.func(segment, **kwargs_func)

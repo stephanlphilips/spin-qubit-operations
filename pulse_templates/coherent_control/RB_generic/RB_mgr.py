@@ -30,13 +30,11 @@ class RB_mgr:
         '''
 
         matrix = copy.deepcopy(self.gate_set.qubit_set.PAULI_I.matrix)
-        
         rands = []
         for i in range(N-1):
             rand = random.randrange(0, self.gate_set.size)
             matrix *= self.gate_set.load_clifford_gate(segment, rand, self.mode)
             rands.append(rand)
-                
         inv = self.gate_set.load_inverting_clifford(segment, matrix, self.mode)
         rands.append(inv)
         return rands
@@ -58,4 +56,4 @@ if __name__ == '__main__':
 
     seg_single = getattr(seg, ss_set.qubit)
     rb_managment = RB_mgr(ss_set, 'XY')
-    rb_managment.add_cliffords(seg_single, 20)
+    rb_managment.add_cliffords(seg_single, 2)

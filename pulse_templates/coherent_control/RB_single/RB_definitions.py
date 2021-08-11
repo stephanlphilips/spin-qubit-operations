@@ -129,7 +129,9 @@ if __name__ == '__main__':
     std_set.X2 = xpi
 
     seg_single = getattr(seg, std_set.qubit)
-    k = std_set.load_clifford_gate(seg_single, 20, 'XY')
-    print(k)
-
-    std_set.qubit_set.get_inverting_gate(k)
+    k = std_set.load_clifford_gate(seg_single, 5, 'XY')
+    l = std_set.load_clifford_gate(seg_single, 3, 'XY')
+    m = k*l
+    a = std_set.qubit_set.get_inverting_gate(m)
+    b = single_qubit_gates_clifford_set()
+    print(b[a].elementary_gates_XY)
