@@ -1,7 +1,7 @@
 from pulse_templates.coherent_control.routines.instruction_builder import quasi_quasm_adder
 
-from witnesses.witness_generator import optimal_witness, stabilizer_witness, mermin_witness
-from witnesses.witness_compiler import witness_compiler
+from routines.witnesses.witness_generator import optimal_witness, stabilizer_witness, mermin_witness
+from routines.witnesses.witness_compiler import compile_witnesses
 
 def generate_witness_operators(system, qubits, m_operator, witness_type='optimal', repeat = 2, verbose = True):
     '''
@@ -16,18 +16,18 @@ def generate_witness_operators(system, qubits, m_operator, witness_type='optimal
         verbose (bool) : show the compiled output
     '''
     witness_generator = None
-    if witness_type is 'optimal':
+    if witness_type == 'optimal':
         witness_generator = optimal_witness
-    elif witness_type is 'stabilizer':
+    elif witness_type == 'stabilizer':
         witness_generator = stabilizer_witness
-    elif witness_type is 'mermin':
+    elif witness_type == 'mermin':
         witness_generator = mermin_witness
     else:
         raise ValueError('Witness type not recognized.')
 
     
     W = witness_generator(len(qubits))
-    instruction_list = witness_compiler(W, qubits, m_operator).compile()
+    instruction_list = compile_witnesses(W, qubits, m_operator)
 
     if verbose == True:
         print(instruction_list)
