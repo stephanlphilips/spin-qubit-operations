@@ -3,7 +3,7 @@ from typing import Optional, Any
 import copy
 
 from pulse_lib.segments.utility.template_base import pulse_template
-from pulse_lib.segments.utility.measurement_ref import MeasurementExpressionBase, MeasurementRef
+from pulse_lib.segments.utility.measurement_ref import MeasurementExpressionBase, MeasurementRef, MeasurementMajority
 from pulse_templates.psb_pulses.readout_template import ReadoutTemplate
 
 @dataclass
@@ -60,6 +60,9 @@ class MeasurementSet:
             return measurement_expression(name, mref, **kwargs)
         else:
             raise ValueError(f'unknown func {func}')
+
+    def majority_vote(self, name, measurements, threshold=0.5):
+        return self.add(name, MeasurementMajority(measurements, threshold))
 
     def __getitem__(self, index):
         return self.measurements[index]
