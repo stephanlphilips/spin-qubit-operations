@@ -14,8 +14,8 @@ def generate_state_tomography_operators(system, qubits, m_operator, repeat = 2, 
         repeat (int) : repeat the current experiment
         verbose (bool) : show the compiled output
     '''    
-    W = state_tomography(len(qubits))
-    instruction_list = compile_state_tomography(W, qubits, m_operator)
+    ST = state_tomography(len(qubits))
+    instruction_list = compile_state_tomography(ST, qubits, m_operator)
 
     if verbose == True:
         print(instruction_list)

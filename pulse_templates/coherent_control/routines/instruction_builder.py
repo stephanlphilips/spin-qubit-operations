@@ -30,6 +30,7 @@ class quasi_quasm_adder(pulse_template):
         setpoint = loop_obj()
         setpoint.add_data(np.linspace(1,len(self.instruction_list)*self.repeat, len(self.instruction_list)*self.repeat), axis=0, labels = self.instruction_list.name)
 
+
         segment = segment._get_segment()
         segment[segment.channels[0]].update_dim(setpoint)
 
@@ -39,3 +40,6 @@ class quasi_quasm_adder(pulse_template):
                     get_target(self.system, gate).build(segment[i + r*len(self.instruction_list)], reset=True, **kwargs)
 
         return segment
+
+# setpoint = loop_obj()
+# setpoint.add_data(np.linspace(1,20, 20), axis=0, labels =' self.instruction_list.name')
