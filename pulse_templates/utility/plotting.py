@@ -3,7 +3,7 @@ from pulse_lib.segments.utility.data_handling_functions import find_common_dimen
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-
+import os
 def plot_seg(segments, idx=0, multi_dim=False):
     '''
     plot all the segments that are operated in a segment, if looped, also plot some parts of the loop.
@@ -64,6 +64,31 @@ def plot_seg(segments, idx=0, multi_dim=False):
 
     plt.legend()
     plt.show()
+
+def save_segment(segments, location, idx=0):
+    if not isinstance(segments, list):
+        segments = [segments]
+
+    os.mkdir(location)
+    for seg_number in range(len(segments)):
+        os.mkdir(location + f'_{seg_number}/')
+
+        _shape = (1,)
+        segments[seg_number].enter_rendering_mode()
+        _shape = find_common_dimension(segments[seg_number].shape, _shape)
+
+        for ch_name in segments[seg_number].channels:
+            data = update_dimension(getattr(segments[seg_number], ch_name)._pulse_data_all, _shape, True)
+            setattr(getattr(segments[seg_number], ch_name), '_pulse_data_all', data)
+
+        for ch_name in segments[seg_number].channels:
+            ch = getattr(seg, ch_name)
+            pulse_data_curr_seg = ch.pulse_data_all.flat[idx]
+
+            sample_rate = 1e9
+            y = pulse_data_curr_seg.render(sample_rate)
+            x = np.linspace(0, pulse_data_curr_seg.total_time, y.size)
+            np.save(f'{location}_{seg_number}/{ch_name}', np.asarray([x,y]))
 
 if __name__ == '__main__':
     from pulse_templates.demo_pulse_lib.virtual_awg import get_demo_lib
