@@ -235,11 +235,11 @@ class six_dot_sample:
 
 
 #        # with correction
-        _read12 = m.add('read12', self.psb12)
+        _read12 = m.add('read12_b', self.psb12)
 
         _read12_cnot_q3_q2 = m.add('read12_cnot_q3_q2', self.psb12)
 
-        _fix_123 = Conditional((m['read12'], m['read12_cnot_q3_q2']),
+        _fix_123 = Conditional((m['read12_b'], m['read12_cnot_q3_q2']),
                                None, # (0,0)
                                [self.q2.X2, self.q3.X2], # (0,1)
                                self.q3.X2, # (1,0)
